@@ -24,7 +24,7 @@ class ChoferService
         private EmailService                $emailService,
     ) {}
 
-    public function invitar(string $email): InvitacionChofer
+    public function invitar(string $email): array
     {
         // Verificar que no exista ya un usuario con ese email
         if ($this->usuarioRepo->findOneBy(['email' => $email, 'eliminado' => false])) {
@@ -42,9 +42,9 @@ class ChoferService
         $this->em->persist($invitacion);
         $this->em->flush();
 
-        $this->emailService->sendInvitacion($email, $invitacion->getToken());
+        $emailSent = $this->emailService->sendInvitacion($email, $invitacion->getToken());
 
-        return $invitacion;
+        return ['invitacion' => $invitacion, 'email_sent' => $emailSent];
     }
 
     public function importar(array $choferes): int

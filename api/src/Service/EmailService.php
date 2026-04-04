@@ -22,7 +22,7 @@ class EmailService
         return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: $default;
     }
 
-    public function sendInvitacion(string $toEmail, string $token): void
+    public function sendInvitacion(string $toEmail, string $token): bool
     {
         $link = "{$this->frontendUrl}/registro/{$token}";
 
@@ -32,7 +32,7 @@ class EmailService
           <p>Fuiste dado de alta en la plataforma de adelanto de facturas de Enviopack.</p>
           <p>Hacé clic en el botón para completar tu registro y elegir tu contraseña:</p>
           <a href="{$link}"
-             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#1C6CF9;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
             Completar registro
           </a>
           <p style="font-size:13px;color:#555">Este enlace es válido por 48 horas.</p>
@@ -40,10 +40,10 @@ class EmailService
         </div>
         HTML;
 
-        $this->send($toEmail, 'Completá tu registro en Enviopack Adelantos', $html);
+        return $this->send($toEmail, 'Completá tu registro en Enviopack Adelantos', $html);
     }
 
-    public function sendRecuperarContrasena(string $toEmail, string $token): void
+    public function sendRecuperarContrasena(string $toEmail, string $token): bool
     {
         $link = "{$this->frontendUrl}/recuperar-contrasena?token={$token}";
 
@@ -52,7 +52,7 @@ class EmailService
           <h2 style="margin-top:0">Recuperá tu contraseña</h2>
           <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
           <a href="{$link}"
-             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#1C6CF9;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
             Restablecer contraseña
           </a>
           <p style="font-size:13px;color:#555">Este enlace es válido por 1 hora.</p>
@@ -60,13 +60,14 @@ class EmailService
         </div>
         HTML;
 
-        $this->send($toEmail, 'Recuperá tu contraseña — Enviopack Adelantos', $html);
+        return $this->send($toEmail, 'Recuperá tu contraseña — Enviopack Adelantos', $html);
     }
 
-    private function send(string $to, string $subject, string $html): void
+    private function send(string $to, string $subject, string $html): bool
     {
         if (!$this->apiKey) {
-            return; // Silently skip if not configured
+            error_log("[EmailService] No API key configured — skipping email to {$to}");
+            return false;
         }
 
         $payload = json_encode([
@@ -75,6 +76,8 @@ class EmailService
             'subject' => $subject,
             'html'    => $html,
         ]);
+
+        error_log("[EmailService] Sending to={$to} from={$this->fromEmail} subject={$subject}");
 
         $ch = curl_init('https://api.resend.com/emails');
         curl_setopt_array($ch, [
@@ -89,10 +92,20 @@ class EmailService
         ]);
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
 
-        if ($httpCode >= 400) {
-            error_log("[EmailService] Resend error {$httpCode}: {$response} | from={$this->fromEmail} to={$to}");
+        if ($curlError) {
+            error_log("[EmailService] cURL error: {$curlError}");
+            return false;
         }
+
+        if ($httpCode >= 400) {
+            error_log("[EmailService] Resend error {$httpCode}: {$response}");
+            return false;
+        }
+
+        error_log("[EmailService] OK ({$httpCode}): {$response}");
+        return true;
     }
 }

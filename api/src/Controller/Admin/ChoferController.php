@@ -38,8 +38,11 @@ class ChoferController extends AbstractApiController
             return new JsonResponse(['code' => 422, 'message' => 'Error de validación', 'errors' => ['email' => 'El email no es válido']], 422);
         }
 
-        $this->choferService->invitar($email);
-        return $this->ok(['message' => 'Invitación enviada correctamente.']);
+        $result = $this->choferService->invitar($email);
+        $msg = $result['email_sent']
+            ? 'Invitación enviada correctamente.'
+            : 'Invitación creada pero el email no pudo enviarse. Verificá la configuración de correo.';
+        return $this->ok(['message' => $msg, 'email_sent' => $result['email_sent']]);
     }
 
     #[Route('/importar', name: 'admin_choferes_importar', methods: ['POST'])]
