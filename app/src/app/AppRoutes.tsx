@@ -17,6 +17,8 @@ import { RecuperarPasswordPage } from '@/pages/RecuperarPassword/RecuperarPasswo
 import { DashboardPage } from '@/pages/chofer/Dashboard/Dashboard.page'
 import { FacturasPage } from '@/pages/chofer/Facturas/Facturas.page'
 import { AdelantosPage } from '@/pages/chofer/Adelantos/Adelantos.page'
+import { HistorialPage } from '@/pages/chofer/Historial/Historial.page'
+import { PerfilPage } from '@/pages/chofer/Perfil/Perfil.page'
 
 // Admin pages
 import { SolicitudesPage } from '@/pages/admin/Solicitudes/Solicitudes.page'
@@ -54,7 +56,8 @@ export const AppRoutes = () => (
         <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
         <Route path={ROUTES.FACTURAS} element={<FacturasPage />} />
         <Route path={ROUTES.ADELANTOS} element={<AdelantosPage />} />
-        <Route path={ROUTES.HISTORIAL} element={<AdelantosPage />} /> {/* same view */}
+        <Route path={ROUTES.HISTORIAL} element={<HistorialPage />} />
+        <Route path={ROUTES.PERFIL} element={<PerfilPage />} />
 
         {/* Admin routes */}
         <Route

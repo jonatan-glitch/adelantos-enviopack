@@ -27,6 +27,12 @@ class Chofer
     #[ORM\Column(length: 30, nullable: true)]
     private ?string $telefono = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $cbu = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $banco = null;
+
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?float $tasa_personal = null;
 
@@ -53,6 +59,10 @@ class Chofer
     public function setCuil(string $cuil): static { $this->cuil = $cuil; return $this; }
     public function getTelefono(): ?string { return $this->telefono; }
     public function setTelefono(?string $telefono): static { $this->telefono = $telefono; return $this; }
+    public function getCbu(): ?string { return $this->cbu; }
+    public function setCbu(?string $cbu): static { $this->cbu = $cbu; return $this; }
+    public function getBanco(): ?string { return $this->banco; }
+    public function setBanco(?string $banco): static { $this->banco = $banco; return $this; }
     public function getTasaPersonal(): ?float { return $this->tasa_personal !== null ? (float)$this->tasa_personal : null; }
     public function setTasaPersonal(?float $tasa): static { $this->tasa_personal = $tasa; return $this; }
     public function isTieneDeuda(): bool { return $this->tiene_deuda; }

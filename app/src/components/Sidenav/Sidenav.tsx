@@ -12,6 +12,7 @@ import {
   ChevronRight,
   FileSpreadsheet,
   X,
+  UserCircle,
 } from 'lucide-react'
 import { ROUTES } from '@/domain/constants'
 import { useRoles } from '@/hooks/useRoles'
@@ -35,6 +36,7 @@ const ConductorNav: NavItemDef[] = [
   { to: ROUTES.FACTURAS, label: 'Mis Facturas', icon: <FileText size={18} /> },
   { to: ROUTES.ADELANTOS, label: 'Adelantos', icon: <CreditCard size={18} /> },
   { to: ROUTES.HISTORIAL, label: 'Historial', icon: <History size={18} /> },
+  { to: ROUTES.PERFIL, label: 'Mi Perfil', icon: <UserCircle size={18} /> },
 ]
 
 const AdminNav: NavItemDef[] = [

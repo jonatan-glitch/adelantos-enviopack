@@ -29,6 +29,7 @@ export const ROUTES = {
   FACTURAS: '/facturas',
   ADELANTOS: '/adelantos',
   HISTORIAL: '/historial',
+  PERFIL: '/perfil',
 
   // Admin
   ADMIN_SOLICITUDES: '/admin/solicitudes',

@@ -13,8 +13,11 @@ http {
     sendfile on;
     keepalive_timeout 65;
 
+    # Rate limiting: max 10 login attempts per minute per IP
+    limit_req_zone $binary_remote_addr zone=login:10m rate=10r/m;
+
     server {
-        listen ${PORT:-8080};
+        listen ${PORT};
         server_name _;
         root /app/public;
         index index.php;
@@ -24,6 +27,13 @@ http {
 
         # Health check — no PHP needed
         location = /api/health {
+            try_files $uri /index.php$is_args$args;
+        }
+
+        # Rate-limit login endpoint
+        location = /api/login {
+            limit_req zone=login burst=5 nodelay;
+            limit_req_status 429;
             try_files $uri /index.php$is_args$args;
         }
 

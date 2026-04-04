@@ -33,6 +33,18 @@ export interface Usuario {
 
 // ─── Chofer ───────────────────────────────────────────────────────────────────
 
+export interface PerfilChofer {
+  id: number
+  nombre: string
+  apellido: string
+  email: string
+  dni: string
+  cuil: string
+  telefono?: string | null
+  cbu?: string | null
+  banco?: string | null
+}
+
 export interface Chofer {
   id: number
   nombre: string
