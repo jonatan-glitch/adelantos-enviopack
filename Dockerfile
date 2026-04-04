@@ -8,8 +8,8 @@ RUN apk add --no-cache \
  && apk add --no-cache libpq icu-libs libzip \
  && apk del libpq-dev icu-dev libzip-dev
 
-# Opcache tuning
-RUN echo "opcache.enable=1\nopcache.memory_consumption=128\nopcache.validate_timestamps=0\nopcache.max_accelerated_files=10000" \
+# Opcache tuning (use printf for proper newlines in Alpine sh)
+RUN printf "opcache.enable=1\nopcache.memory_consumption=128\nopcache.validate_timestamps=0\nopcache.max_accelerated_files=10000\n" \
     > /usr/local/etc/php/conf.d/opcache-tuning.ini
 
 # Composer
