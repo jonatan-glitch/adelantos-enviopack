@@ -31,7 +31,8 @@ COPY api/docker/nginx.conf     /etc/nginx/nginx.conf.template
 COPY api/docker/supervisord.conf /etc/supervisord.conf
 COPY api/docker/start.sh       /start.sh
 
-RUN chmod +x /start.sh \
+RUN adduser -D -u 1000 www-data 2>/dev/null || true \
+ && chmod +x /start.sh \
  && mkdir -p /var/log/nginx /run/nginx /var/log/supervisor \
  && mkdir -p var/cache var/log \
  && chmod -R 777 var/
