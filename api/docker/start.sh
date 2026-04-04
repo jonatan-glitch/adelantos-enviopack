@@ -30,5 +30,11 @@ echo "==> Migraciones..."
 php bin/console doctrine:migrations:migrate --no-interaction --env=prod 2>&1 || \
     echo "    (DB no disponible aún, se reintentará)"
 
+echo "==> Seeds..."
+if [ "${SEED_DB:-0}" = "1" ]; then
+    php bin/console doctrine:fixtures:load --no-interaction --env=prod --no-debug 2>&1 || \
+        echo "    (fixtures fallaron)"
+fi
+
 echo "==> Iniciando php-fpm + nginx (PORT=${PORT})..."
 exec /usr/bin/supervisord -c /etc/supervisord.conf
