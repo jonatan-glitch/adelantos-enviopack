@@ -11,8 +11,8 @@ class EmailService
 
     public function __construct()
     {
-        $this->apiKey      = $this->env('RESEND_API_KEY', '');
-        $this->fromEmail   = $this->env('EMAIL_FROM', 'onboarding@resend.dev');
+        $this->apiKey      = $this->env('BREVO_API_KEY', '');
+        $this->fromEmail   = $this->env('EMAIL_FROM', 'enviopackadelantos@gmail.com');
         $this->fromName    = $this->env('EMAIL_FROM_NAME', 'Enviopack Adelantos');
         $this->frontendUrl = rtrim($this->env('FRONTEND_URL', $this->env('APP_FRONTEND_URL', 'https://adelantos-app.vercel.app')), '/');
     }
@@ -66,26 +66,26 @@ class EmailService
     private function send(string $to, string $subject, string $html): bool
     {
         if (!$this->apiKey) {
-            error_log("[EmailService] No API key configured — skipping email to {$to}");
+            error_log("[EmailService] No BREVO_API_KEY configured — skipping email to {$to}");
             return false;
         }
 
         $payload = json_encode([
-            'from'    => "{$this->fromName} <{$this->fromEmail}>",
-            'to'      => [$to],
-            'subject' => $subject,
-            'html'    => $html,
+            'sender'      => ['name' => $this->fromName, 'email' => $this->fromEmail],
+            'to'          => [['email' => $to]],
+            'subject'     => $subject,
+            'htmlContent' => $html,
         ]);
 
         error_log("[EmailService] Sending to={$to} from={$this->fromEmail} subject={$subject}");
 
-        $ch = curl_init('https://api.resend.com/emails');
+        $ch = curl_init('https://api.brevo.com/v3/smtp/email');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => $payload,
             CURLOPT_HTTPHEADER     => [
-                'Authorization: Bearer ' . $this->apiKey,
+                'api-key: ' . $this->apiKey,
                 'Content-Type: application/json',
             ],
             CURLOPT_TIMEOUT        => 10,
@@ -101,7 +101,7 @@ class EmailService
         }
 
         if ($httpCode >= 400) {
-            error_log("[EmailService] Resend error {$httpCode}: {$response}");
+            error_log("[EmailService] Brevo error {$httpCode}: {$response}");
             return false;
         }
 
