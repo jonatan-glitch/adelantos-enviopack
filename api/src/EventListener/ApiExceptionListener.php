@@ -66,7 +66,6 @@ class ApiExceptionListener
         $event->setResponse(new JsonResponse([
             'code'    => 500,
             'message' => 'Error interno del servidor',
-            '_debug'  => $exception->getMessage().' in '.$exception->getFile().':'.$exception->getLine(),
         ], 500));
     }
 }

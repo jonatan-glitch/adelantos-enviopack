@@ -8,7 +8,8 @@ mkdir -p /app/config/jwt
 
 if [ -n "$JWT_PRIVATE_KEY_BASE64" ]; then
     echo "$JWT_PRIVATE_KEY_BASE64" | base64 -d > /app/config/jwt/private.pem
-    chmod 600 /app/config/jwt/private.pem
+    chown root:www-data /app/config/jwt/private.pem
+    chmod 640 /app/config/jwt/private.pem
     echo "    private.pem OK"
 fi
 
