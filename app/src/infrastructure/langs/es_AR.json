@@ -1,0 +1,264 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "actions": "Acciones",
+    "status": "Estado",
+    "date": "Fecha",
+    "amount": "Monto",
+    "yes": "Sí",
+    "no": "No",
+    "error": "Error",
+    "success": "Éxito",
+    "noData": "Sin datos",
+    "of": "de",
+    "page": "Página",
+    "rows": "filas",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "pending": "Pendiente",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "paid": "Pagado"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Plataforma de adelanto de facturas",
+      "email": "Email",
+      "password": "Contraseña",
+      "remember": "Recordar sesión",
+      "submit": "Ingresar",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "error": "Email o contraseña incorrectos"
+    },
+    "recoverPassword": {
+      "title": "Recuperar contraseña",
+      "subtitle": "Te enviaremos un email con las instrucciones",
+      "email": "Email",
+      "submit": "Enviar instrucciones",
+      "back": "Volver al login",
+      "success": "Revisá tu email para continuar"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "facturas": "Facturas",
+    "adelantos": "Adelantos",
+    "historial": "Historial",
+    "solicitudes": "Solicitudes",
+    "proformas": "Proformas",
+    "choferes": "Choferes",
+    "configuracion": "Configuración",
+    "reportes": "Reportes",
+    "perfil": "Mi perfil",
+    "logout": "Cerrar sesión"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "stats": {
+        "facturasDisponibles": "Facturas disponibles",
+        "adelantosPendientes": "Adelantos pendientes",
+        "totalFacturado": "Total facturado",
+        "totalAdelantado": "Total adelantado"
+      }
+    },
+    "facturas": {
+      "title": "Mis Facturas",
+      "table": {
+        "columns": {
+          "numero": "N° Factura",
+          "monto": "Monto",
+          "fechaEmision": "Fecha emisión",
+          "fechaCobro": "Fecha cobro",
+          "estado": "Estado"
+        },
+        "empty": {
+          "title": "Sin facturas disponibles",
+          "message": "El equipo de administración aún no ha cargado proformas para vos."
+        }
+      },
+      "actions": {
+        "solicitarAdelanto": "Solicitar adelanto",
+        "verDetalle": "Ver detalle",
+        "subirFactura": "Subir factura"
+      },
+      "estados": {
+        "pendienteCobro": "Pendiente de cobro",
+        "conAdelantoSolicitado": "Adelanto solicitado",
+        "adelantoAprobado": "Adelanto aprobado",
+        "adelantoPagado": "Adelanto pagado",
+        "adelantoRechazado": "Adelanto rechazado",
+        "cobroNormal": "Cobro normal",
+        "pagadaCobroNormal": "Pagada"
+      }
+    },
+    "adelantos": {
+      "title": "Adelantos",
+      "table": {
+        "columns": {
+          "factura": "Factura",
+          "montoSolicitado": "Monto solicitado",
+          "montoNeto": "Monto neto",
+          "tasa": "Tasa",
+          "fechaSolicitud": "Fecha solicitud",
+          "estado": "Estado"
+        },
+        "empty": {
+          "title": "Sin adelantos",
+          "message": "Todavía no realizaste ninguna solicitud de adelanto."
+        }
+      },
+      "solicitar": {
+        "title": "Solicitar adelanto",
+        "resumen": "Resumen de la operación",
+        "montoBruto": "Monto bruto",
+        "descuento": "Descuento aplicado",
+        "montoNeto": "Monto a recibir",
+        "plazo": "Plazo estimado de acreditación",
+        "horas": "48 horas hábiles",
+        "tasa": "Tasa vigente",
+        "consentimiento": "Acepto los términos y condiciones de esta operación de adelanto de factura.",
+        "confirmar": "Confirmar solicitud",
+        "cancelar": "Cancelar"
+      }
+    },
+    "admin": {
+      "solicitudes": {
+        "title": "Gestión de solicitudes",
+        "table": {
+          "columns": {
+            "chofer": "Chofer",
+            "factura": "N° Factura",
+            "montoBruto": "Monto bruto",
+            "montoNeto": "Monto neto",
+            "tasa": "Tasa",
+            "fechaSolicitud": "Fecha solicitud",
+            "estado": "Estado",
+            "aprobacion": "Tipo aprobación"
+          },
+          "empty": {
+            "title": "Sin solicitudes",
+            "message": "No hay solicitudes pendientes de revisión."
+          }
+        },
+        "actions": {
+          "aprobar": "Aprobar",
+          "rechazar": "Rechazar",
+          "registrarPago": "Registrar pago",
+          "verDetalle": "Ver detalle"
+        },
+        "modal": {
+          "aprobar": {
+            "title": "Aprobar solicitud",
+            "body": "¿Confirmás que querés aprobar esta solicitud de adelanto?"
+          },
+          "rechazar": {
+            "title": "Rechazar solicitud",
+            "motivo": "Motivo del rechazo",
+            "motivoPlaceholder": "Ingresá el motivo del rechazo...",
+            "motivoRequired": "El motivo es obligatorio"
+          },
+          "pago": {
+            "title": "Registrar pago",
+            "comprobante": "Comprobante de pago",
+            "comprobanteHelper": "Adjuntá el PDF o imagen del comprobante de transferencia"
+          }
+        },
+        "tipoAprobacion": {
+          "automatica": "Automática",
+          "manual": "Manual"
+        }
+      },
+      "proformas": {
+        "title": "Proformas",
+        "nueva": "Nueva proforma",
+        "form": {
+          "chofer": "Chofer",
+          "periodo": "Período",
+          "montoProforma": "Monto de la proforma",
+          "fechaVencimiento": "Fecha de vencimiento",
+          "tasaAplicada": "Tasa aplicada",
+          "descripcion": "Descripción"
+        },
+        "table": {
+          "columns": {
+            "chofer": "Chofer",
+            "periodo": "Período",
+            "monto": "Monto",
+            "tasa": "Tasa",
+            "fecha": "Fecha",
+            "estado": "Estado"
+          }
+        }
+      },
+      "choferes": {
+        "title": "Choferes",
+        "nuevo": "Nuevo chofer",
+        "table": {
+          "columns": {
+            "nombre": "Nombre",
+            "apellido": "Apellido",
+            "dni": "DNI",
+            "email": "Email",
+            "estado": "Estado",
+            "tasaPersonal": "Tasa personal"
+          }
+        },
+        "form": {
+          "nombre": "Nombre",
+          "apellido": "Apellido",
+          "dni": "DNI",
+          "cuil": "CUIT/CUIL",
+          "email": "Email",
+          "telefono": "Teléfono",
+          "tasa": "Tasa personal (opcional)",
+          "tasaHelper": "Dejar vacío para usar la tasa global"
+        }
+      },
+      "configuracion": {
+        "title": "Configuración",
+        "tasa": {
+          "title": "Tasa de descuento",
+          "tasaGlobal": "Tasa global",
+          "tasaHelper": "Porcentaje mínimo 3%. Aplica a todas las nuevas proformas.",
+          "diasPago": "Días para cobro normal",
+          "diasPagoHelper": "Plazo en días desde la emisión de la factura (por defecto 30).",
+          "plazoAcreditacion": "Plazo de acreditación de adelantos (horas hábiles)",
+          "guardar": "Guardar configuración"
+        },
+        "notificaciones": {
+          "title": "Notificaciones",
+          "emails": "Emails de administración",
+          "emailsHelper": "Ingresá los emails separados por coma que recibirán notificaciones de nuevas facturas.",
+          "guardar": "Guardar"
+        }
+      },
+      "reportes": {
+        "title": "Reportes y métricas",
+        "kpis": {
+          "montoTotalFacturado": "Monto total facturado",
+          "descuentosObtenidos": "Descuentos obtenidos",
+          "choforesTotal": "Choferes totales",
+          "choforesConAdelanto": "Choferes con adelanto",
+          "tasaPromedio": "Tasa promedio",
+          "tiempoPromedioAprobacion": "Tiempo promedio de aprobación"
+        },
+        "exportar": "Exportar Excel",
+        "periodo": "Período"
+      }
+    }
+  }
+}

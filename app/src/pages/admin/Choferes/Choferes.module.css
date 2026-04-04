@@ -1,0 +1,260 @@
+/* ── Layout ─────────────────────────────────────────────── */
+.page { padding: 32px; }
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.pageTitle { font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-gray-900); }
+.pageSubtitle { font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: 4px; }
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Modal (shared) ──────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalWide {
+  max-width: 780px;
+  max-height: 90vh;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-gray-100);
+  flex-shrink: 0;
+}
+
+.modalTitle { font-size: var(--font-size-xl); font-weight: 700; color: var(--color-gray-900); }
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+.closeBtn:hover { color: var(--color-gray-700); }
+
+.modalBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-gray-100);
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* ── Form fields ─────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 4px; }
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
+}
+
+.input {
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-base);
+  outline: none;
+  width: 100%;
+  background: white;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.input:focus { border-color: var(--color-accent); }
+
+.error { font-size: var(--font-size-xs); color: var(--color-error); margin-top: 2px; }
+
+/* ── File drop zone ──────────────────────────────────────── */
+.fileDropZone {
+  border: 2px dashed var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--color-gray-50);
+  position: relative;
+}
+.fileDropZone:hover,
+.fileDropZoneActive {
+  border-color: var(--color-accent);
+  background: var(--color-alice-blue);
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.fileIcon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: var(--color-gray-400);
+}
+.fileDropText {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+.fileDropSubtext {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+  margin-top: 4px;
+}
+
+/* ── Template hint & link ────────────────────────────────── */
+.templateHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  padding: 10px 14px;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
+  line-height: 1.6;
+}
+
+.templateLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-accent);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-base);
+}
+.templateLink:hover { text-decoration: underline; }
+
+/* ── Preview table ───────────────────────────────────────── */
+.previewWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+}
+
+.previewTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+}
+
+.previewTable th {
+  background: var(--color-gray-50);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-gray-600);
+  border-bottom: 1px solid var(--color-gray-200);
+  white-space: nowrap;
+}
+
+.previewTable td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-gray-100);
+  color: var(--color-gray-700);
+  vertical-align: top;
+}
+
+.previewTable tr:last-child td { border-bottom: none; }
+
+.rowInvalid td { background: #FEF2F2; }
+
+.cellError {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+/* ── Summary counts ──────────────────────────────────────── */
+.previewSummary {
+  display: flex;
+  gap: 16px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  align-items: center;
+}
+.summaryValid { color: #15803D; font-weight: 600; }
+.summaryInvalid { color: var(--color-error); font-weight: 600; }
+
+/* ── File selected bar ───────────────────────────────────── */
+.fileSelectedBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fileSelectedName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page { padding: 16px; }
+  .pageHeader { flex-direction: column; align-items: stretch; }
+  .headerActions { flex-direction: column-reverse; }
+  .modal, .modalWide { max-height: 95vh; border-radius: var(--radius-lg); }
+  .modalHeader { padding: 16px; }
+  .modalBody { padding: 16px; }
+  .modalFooter { padding: 12px 16px; flex-direction: column-reverse; }
+}

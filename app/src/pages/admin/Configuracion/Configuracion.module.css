@@ -1,0 +1,107 @@
+.page { padding: 32px; max-width: 800px; }
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.pageTitle { font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-gray-900); }
+.pageSubtitle { font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: 2px; }
+
+.sections { display: flex; flex-direction: column; gap: 24px; }
+
+.card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.fields {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-700);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint { font-size: var(--font-size-xs); color: var(--color-gray-400); }
+
+.input {
+  width: 100%;
+  max-width: 280px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(72,112,250,0.1); }
+
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-base);
+  resize: vertical;
+  outline: none;
+}
+
+.textarea:focus { border-color: var(--color-accent); }
+
+.saveRow { display: flex; justify-content: flex-end; }
+
+.saveBtn {
+  padding: 12px 28px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.saveBtn:hover:not(:disabled) { background: #2B3C66; }
+.saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+  .page { padding: 16px; max-width: 100%; }
+  .fields { padding: 16px; }
+  .input { max-width: 100%; }
+  .saveRow { justify-content: stretch; }
+  .saveBtn { width: 100%; }
+}

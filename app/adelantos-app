@@ -1,0 +1,3 @@
+cd "/Users/enviopack/Downloads/Nueva plataforma de adelantos/app"
+git remote add origin https://github.com/jonatan-glitch/adelantos-app.git
+git push -u origin main
