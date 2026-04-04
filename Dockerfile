@@ -29,7 +29,10 @@ RUN composer dump-autoload --optimize --no-dev
 
 # Config files
 COPY api/docker/nginx.conf /etc/nginx/nginx.conf.template
-COPY api/docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-www.conf
+
+# Remove default www pool and replace with TCP socket config
+RUN rm -f /usr/local/etc/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/www.conf.default
+COPY api/docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY api/docker/supervisord.conf /etc/supervisord.conf
 COPY api/docker/start.sh /start.sh
 
