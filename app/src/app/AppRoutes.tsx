@@ -12,6 +12,7 @@ import { PermissionGuard } from '@/components/PermissionGuard/PermissionGuard'
 // Public pages
 import { LoginPage } from '@/pages/Login/Login.page'
 import { RecuperarPasswordPage } from '@/pages/RecuperarPassword/RecuperarPassword.page'
+import { RegistroPage } from '@/pages/Registro/Registro.page'
 
 // Chofer pages
 import { DashboardPage } from '@/pages/chofer/Dashboard/Dashboard.page'
@@ -45,6 +46,7 @@ export const AppRoutes = () => (
     {/* Public */}
     <Route element={<PublicLayout />}>
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+      <Route path={ROUTES.REGISTRO} element={<RegistroPage />} />
       <Route path={ROUTES.RECUPERAR_PASSWORD} element={<RecuperarPasswordPage />} />
     </Route>
 

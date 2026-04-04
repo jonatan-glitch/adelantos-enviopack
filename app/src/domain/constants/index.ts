@@ -22,6 +22,7 @@ export const SUPERVISOR_ROLES: Role[] = [
 export const ROUTES = {
   // Públicas
   LOGIN: '/login',
+  REGISTRO: '/registro/:token',
   RECUPERAR_PASSWORD: '/recuperar-contrasena',
 
   // Chofer
@@ -59,6 +60,7 @@ export const EXCLUDED_AUTH_URLS = [
   API_ROUTES.LOGIN,
   API_ROUTES.REFRESH,
   '/api/recuperar-contrasena',
+  '/api/registro',
 ]
 
 export const TASA_MINIMA = 3
