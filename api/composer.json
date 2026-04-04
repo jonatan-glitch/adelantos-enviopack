@@ -1,6 +1,6 @@
 {
     "name": "enviopack/adelantos-api",
-    "description": "API backend para plataforma de adelantos a choferes",
+    "description": "API backend para plataforma de adelantos a choferes v2",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
