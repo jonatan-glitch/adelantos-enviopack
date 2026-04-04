@@ -4,101 +4,49 @@
 }
 
 .branding {
-  flex: 1;
-  background: var(--color-primary);
+  flex: 0 0 38%;
+  background: #3D4F5F;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px;
   position: relative;
-  overflow: hidden;
 }
 
-.branding::before {
-  content: '';
+.logo {
+  width: 240px;
+  height: auto;
+}
+
+.version {
   position: absolute;
-  top: -120px;
-  right: -80px;
-  width: 400px;
-  height: 400px;
-  background: rgba(72,112,250,0.15);
-  border-radius: 50%;
-}
-
-.branding::after {
-  content: '';
-  position: absolute;
-  bottom: -100px;
-  left: -60px;
-  width: 300px;
-  height: 300px;
-  background: rgba(72,112,250,0.1);
-  border-radius: 50%;
-}
-
-.brandingContent {
-  position: relative;
-  z-index: 1;
-  max-width: 400px;
-}
-
-.logoMark {
-  width: 56px;
-  height: 56px;
-  background: var(--color-accent);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 22px;
-  color: white;
-  margin-bottom: 24px;
-}
-
-.brandName {
-  font-size: 36px;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 8px;
-}
-
-.tagline {
-  font-size: var(--font-size-lg);
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 40px;
-  line-height: 1.5;
-}
-
-.feature {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  color: rgba(255,255,255,0.8);
-  font-size: var(--font-size-md);
-}
-
-.featureDot {
-  width: 8px;
-  height: 8px;
-  background: var(--color-accent);
-  border-radius: 50%;
-  flex-shrink: 0;
+  bottom: 20px;
+  left: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
 }
 
 .form {
-  width: 480px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
   padding: 48px;
+  position: relative;
 }
 
 .formContent {
   width: 100%;
-  max-width: 360px;
+  max-width: 400px;
+}
+
+.copyright {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  font-size: 12px;
+  color: #999;
 }
 
 @media (max-width: 768px) {
@@ -106,14 +54,23 @@
     flex-direction: column;
   }
   .branding {
-    padding: 32px 24px;
-    min-height: 200px;
+    flex: none;
+    padding: 40px 24px;
+    min-height: 160px;
   }
   .form {
-    width: 100%;
     padding: 32px 24px;
   }
   .brandName {
-    font-size: 28px;
+    font-size: 26px;
+  }
+  .version {
+    display: none;
+  }
+  .copyright {
+    position: static;
+    display: block;
+    text-align: center;
+    margin-top: 32px;
   }
 }

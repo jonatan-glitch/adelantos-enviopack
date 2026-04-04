@@ -21,13 +21,10 @@ export const LoginPage = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Iniciar sesión</h2>
-        <p className={styles.subtitle}>Plataforma de adelanto de facturas</p>
-      </div>
+      <h2 className={styles.title}>Ingresar a Enviopack</h2>
 
       <Formik
-        initialValues={{ email: '', contrasena: '', recordar: false }}
+        initialValues={{ email: '', contrasena: '', recordar: true }}
         validationSchema={schema}
         onSubmit={async (values, { setSubmitting }) => {
           setServerError('')
@@ -48,40 +45,38 @@ export const LoginPage = () => {
         {({ isSubmitting }) => (
           <Form className={styles.form}>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="email">Email</label>
+              <label className={styles.label} htmlFor="email">EMAIL</label>
               <Field
                 id="email"
                 name="email"
                 type="email"
                 className={styles.input}
-                placeholder="tu@email.com"
                 autoComplete="email"
               />
               <ErrorMessage name="email" component="p" className={styles.error} />
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="contrasena">Contraseña</label>
+              <div className={styles.labelRow}>
+                <label className={styles.label} htmlFor="contrasena">CONTRASEÑA</label>
+                <Link to={ROUTES.RECUPERAR_PASSWORD} className={styles.link}>
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <Field
                 id="contrasena"
                 name="contrasena"
                 type="password"
                 className={styles.input}
-                placeholder="••••••••"
                 autoComplete="current-password"
               />
               <ErrorMessage name="contrasena" component="p" className={styles.error} />
             </div>
 
-            <div className={styles.row}>
-              <label className={styles.checkboxLabel}>
-                <Field name="recordar" type="checkbox" className={styles.checkbox} />
-                Recordar sesión
-              </label>
-              <Link to={ROUTES.RECUPERAR_PASSWORD} className={styles.link}>
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
+            <label className={styles.checkboxLabel}>
+              <Field name="recordar" type="checkbox" className={styles.checkbox} />
+              Recordar mi usuario
+            </label>
 
             {serverError && (
               <div className={styles.serverError}>{serverError}</div>
@@ -92,7 +87,7 @@ export const LoginPage = () => {
               className={styles.submitBtn}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Ingresando...' : 'Ingresar'}
+              {isSubmitting ? 'Ingresando...' : 'Iniciar sesión'}
             </button>
           </Form>
         )}
