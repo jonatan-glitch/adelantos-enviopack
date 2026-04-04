@@ -2,12 +2,15 @@
 
 namespace App\Controller;
 
-use App\Entity\SolicitudAdelanto;
-use App\Entity\Factura;
+use App\Entity\PasswordResetToken;
 use App\Repository\InvitacionChoferRepository;
+use App\Repository\PasswordResetTokenRepository;
+use App\Repository\UsuarioRepository;
 use App\Service\ChoferService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api')]
@@ -83,16 +86,77 @@ class AuthController extends AbstractApiController
     // ── Recuperar contraseña ──────────────────────────────────────────────────
 
     #[Route('/recuperar-contrasena', name: 'api_recuperar_solicitar', methods: ['POST'])]
-    public function recuperarSolicitar(Request $request): JsonResponse
-    {
-        // TODO: implementar flujo de recuperación de contraseña por email
-        return $this->ok(['message' => 'Si el email existe recibirás instrucciones en breve.']);
+    public function recuperarSolicitar(
+        Request $request,
+        UsuarioRepository $usuarioRepo,
+        PasswordResetTokenRepository $tokenRepo,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        $data  = json_decode($request->getContent(), true) ?? [];
+        $email = trim($data['email'] ?? '');
+
+        // Always return same message to avoid user enumeration
+        $response = $this->ok(['message' => 'Si el email existe recibirás instrucciones en breve.']);
+
+        if (!$email) {
+            return $response;
+        }
+
+        $usuario = $usuarioRepo->findOneBy(['email' => $email]);
+        if (!$usuario) {
+            return $response;
+        }
+
+        // Invalidate existing tokens for this user
+        $existing = $tokenRepo->findBy(['usuario' => $usuario, 'used' => false]);
+        foreach ($existing as $t) {
+            $t->setUsed(true);
+        }
+
+        $token = (new PasswordResetToken())
+            ->setToken(bin2hex(random_bytes(32)))
+            ->setUsuario($usuario)
+            ->setExpiresAt(new \DateTimeImmutable('+1 hour'))
+            ->setUsed(false);
+
+        $em->persist($token);
+        $em->flush();
+
+        // TODO: send email with reset link using $token->getToken()
+
+        return $response;
     }
 
     #[Route('/recuperar-contrasena', name: 'api_recuperar_confirmar', methods: ['PUT'])]
-    public function recuperarConfirmar(Request $request): JsonResponse
-    {
-        // TODO: implementar confirmación de reset de contraseña
-        return new JsonResponse(['code' => 501, 'message' => 'No implementado aún.'], 501);
+    public function recuperarConfirmar(
+        Request $request,
+        PasswordResetTokenRepository $tokenRepo,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher,
+    ): JsonResponse {
+        $data     = json_decode($request->getContent(), true) ?? [];
+        $tokenStr = trim($data['token'] ?? '');
+        $password = trim($data['contrasena'] ?? '');
+
+        if (!$tokenStr || !$password) {
+            return new JsonResponse(['code' => 422, 'message' => 'Token y contraseña son obligatorios.'], 422);
+        }
+
+        if (strlen($password) < 8) {
+            return new JsonResponse(['code' => 422, 'message' => 'La contraseña debe tener al menos 8 caracteres.'], 422);
+        }
+
+        $token = $tokenRepo->findOneBy(['token' => $tokenStr]);
+        if (!$token || !$token->isValid()) {
+            return new JsonResponse(['code' => 400, 'message' => 'Token inválido o expirado.'], 400);
+        }
+
+        $usuario = $token->getUsuario();
+        $usuario->setContrasena($hasher->hashPassword($usuario, $password));
+
+        $token->setUsed(true);
+        $em->flush();
+
+        return $this->ok(['message' => 'Contraseña actualizada correctamente. Ya podés iniciar sesión.']);
     }
 }
