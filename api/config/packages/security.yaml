@@ -23,10 +23,6 @@ security:
                 password_path: contrasena
                 success_handler: App\Security\AuthenticationSuccessHandler
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
-            login_throttling:
-                max_attempts: 5
-                interval: '15 minutes'
-
         api:
             pattern: ^/api
             stateless: true
