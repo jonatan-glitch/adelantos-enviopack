@@ -11,10 +11,15 @@ class EmailService
 
     public function __construct()
     {
-        $this->apiKey      = $_ENV['RESEND_API_KEY'] ?? '';
-        $this->fromEmail   = $_ENV['EMAIL_FROM']      ?? 'adelantos@enviopack.com';
-        $this->fromName    = $_ENV['EMAIL_FROM_NAME'] ?? 'Enviopack Adelantos';
-        $this->frontendUrl = rtrim($_ENV['FRONTEND_URL'] ?? 'https://adelantos-app.vercel.app', '/');
+        $this->apiKey      = $this->env('RESEND_API_KEY', '');
+        $this->fromEmail   = $this->env('EMAIL_FROM', 'onboarding@resend.dev');
+        $this->fromName    = $this->env('EMAIL_FROM_NAME', 'Enviopack Adelantos');
+        $this->frontendUrl = rtrim($this->env('FRONTEND_URL', $this->env('APP_FRONTEND_URL', 'https://adelantos-app.vercel.app')), '/');
+    }
+
+    private function env(string $key, string $default): string
+    {
+        return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: $default;
     }
 
     public function sendInvitacion(string $toEmail, string $token): void
@@ -82,7 +87,12 @@ class EmailService
             ],
             CURLOPT_TIMEOUT        => 10,
         ]);
-        curl_exec($ch);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        if ($httpCode >= 400) {
+            error_log("[EmailService] Resend error {$httpCode}: {$response} | from={$this->fromEmail} to={$to}");
+        }
     }
 }
