@@ -33,5 +33,12 @@ echo "==> Ejecutando migraciones..."
 php bin/console doctrine:migrations:migrate --no-interaction --env=prod 2>&1 || \
     echo "    ADVERTENCIA: migraciones fallaron (DB puede no estar disponible aún)"
 
+echo "==> Verificando config de php-fpm..."
+php-fpm --test 2>&1 || echo "ERROR EN CONFIG PHP-FPM (ver arriba)"
+echo "Pool configs presentes:"
+ls -la /usr/local/etc/php-fpm.d/
+echo "Contenido www.conf:"
+cat /usr/local/etc/php-fpm.d/www.conf
+
 echo "==> Iniciando servicios (PORT=${PORT})..."
 exec /usr/bin/supervisord -c /etc/supervisord.conf
