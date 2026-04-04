@@ -1,0 +1,113 @@
+/* ── Layout ──────────────────────────────────────────────── */
+.page { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitle { font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-gray-900); margin: 0; }
+.pageSubtitle { font-size: var(--font-size-sm); color: var(--color-gray-400); margin-top: 4px; }
+
+/* ── Export button ───────────────────────────────────────── */
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-alice-blue);
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: var(--font-base);
+  white-space: nowrap;
+}
+.exportBtn:hover { background: var(--color-accent); color: white; }
+
+/* ── Summary cards ───────────────────────────────────────── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.summaryCard {
+  padding: 16px 20px;
+  border-radius: var(--radius-xl);
+  border: 1px solid transparent;
+}
+
+.cardBlue { background: #EFF6FF; border-color: #BFDBFE; }
+.cardGreen { background: #F0FDF4; border-color: #BBF7D0; }
+.cardPurple { background: #F5F3FF; border-color: #DDD6FE; }
+
+.summaryLabel { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-gray-500); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 6px; }
+.summaryValue { font-size: var(--font-size-xl); font-weight: 800; color: var(--color-gray-900); margin: 0; }
+
+/* ── Filters ─────────────────────────────────────────────── */
+.filtersBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: white;
+  border: 1px solid var(--color-gray-100);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+}
+
+.filtersLeft { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+
+.filterField { display: flex; flex-direction: column; gap: 4px; }
+.filterLabel { font-size: var(--font-size-xs); font-weight: 600; color: var(--color-gray-500); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.dateInput,
+.selectInput {
+  padding: 8px 10px;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-base);
+  color: var(--color-gray-700);
+  background: white;
+  outline: none;
+}
+.dateInput:focus,
+.selectInput:focus { border-color: var(--color-accent); }
+
+.clearBtn {
+  padding: 8px 14px;
+  background: none;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  cursor: pointer;
+  font-family: var(--font-base);
+}
+.clearBtn:hover { border-color: var(--color-gray-400); color: var(--color-gray-700); }
+
+.recordCount { font-size: var(--font-size-sm); color: var(--color-gray-400); margin: 0; }
+
+/* ── Table cell helpers ──────────────────────────────────── */
+.facturaNum { font-weight: 600; color: var(--color-gray-900); }
+.montoAprobado { font-weight: 700; color: var(--color-success); }
+.motivoRechazo { font-size: var(--font-size-xs); color: var(--color-error); margin-top: 2px; }
+.dash { color: var(--color-gray-300); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .summaryGrid { grid-template-columns: 1fr 1fr; }
+  .page { padding: 16px; }
+}
+
+@media (max-width: 600px) {
+  .summaryGrid { grid-template-columns: 1fr; }
+}
