@@ -28,7 +28,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
 # Cache bust — increment to force full rebuild
-ARG CACHE_BUST=4
+ARG CACHE_BUST=5
 
 # Copy source
 COPY . .
@@ -38,6 +38,11 @@ RUN composer dump-autoload --optimize --no-dev
 
 # ────────────────────────────────────────────────────────────
 FROM php:8.2-fpm-alpine AS runtime
+
+# Remove conflicting php-fpm pool files from base image immediately (before any cache kicks in)
+RUN rm -f /usr/local/etc/php-fpm.d/zz-docker.conf \
+       /usr/local/etc/php-fpm.d/www.conf.default \
+       /usr/local/etc/php-fpm.d/www.conf
 
 RUN apk add --no-cache \
     nginx \
@@ -70,9 +75,8 @@ COPY --from=builder /app /app
 # Nginx config template (PORT is injected at runtime by Railway)
 COPY docker/nginx.conf.template /etc/nginx/nginx.conf.template
 
-# PHP-FPM pool config — remove Alpine's zz-docker.conf so our www.conf is authoritative
+# PHP-FPM pool config (zz-docker.conf already removed above)
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-RUN rm -f /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/www.conf.default
 
 # Supervisord config
 COPY docker/supervisord.conf /etc/supervisord.conf
@@ -81,12 +85,15 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
-RUN mkdir -p /var/log/nginx /run/nginx /var/log/supervisor
+RUN mkdir -p /var/log/nginx /run/nginx /var/log/supervisor /run/php-fpm
 
 # Symfony cache/logs dirs
 RUN mkdir -p var/cache var/log \
  && chmod -R 777 var/
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
+    CMD wget -qO- http://127.0.0.1:${PORT:-8080}/ping | grep -q pong || exit 1
 
 CMD ["/start.sh"]
