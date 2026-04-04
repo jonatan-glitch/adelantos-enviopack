@@ -1,0 +1,220 @@
+/* ── Layout ──────────────────────────────────────────────── */
+.page { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-base);
+}
+.backLink:hover { color: var(--color-gray-900); }
+
+/* ── Page header ─────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerLeft { display: flex; align-items: center; gap: 16px; }
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: white;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.pageTitle { font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-gray-900); }
+
+.headerMeta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card {
+  background: white;
+  border: 1px solid var(--color-gray-100);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.cardTitle { font-size: var(--font-size-lg); font-weight: 700; color: var(--color-gray-900); margin-bottom: 16px; }
+.cardSubtitle { font-size: var(--font-size-sm); color: var(--color-gray-400); margin-bottom: 16px; margin-top: -12px; }
+
+.cardHeaderRow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.cardHeaderRow .cardTitle { margin-bottom: 0; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* ── Info grid ───────────────────────────────────────────── */
+.infoGrid { display: flex; flex-direction: column; gap: 12px; }
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-gray-50);
+}
+.infoRow:last-child { border-bottom: none; padding-bottom: 0; }
+
+.infoLabel { font-size: var(--font-size-sm); color: var(--color-gray-500); flex-shrink: 0; }
+.infoValue { font-size: var(--font-size-sm); color: var(--color-gray-900); font-weight: 500; text-align: right; }
+
+/* ── Tasa section ────────────────────────────────────────── */
+.tasaDisplay { margin-bottom: 16px; }
+.tasaValue { font-size: 32px; font-weight: 800; color: var(--color-accent); }
+.tasaValueGlobal { font-size: 24px; font-weight: 700; color: var(--color-gray-400); }
+.tasaType { display: block; font-size: var(--font-size-sm); color: var(--color-gray-400); margin-top: 4px; }
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-base);
+}
+.editBtn:hover { background: var(--color-alice-blue); }
+
+.tasaForm { display: flex; flex-direction: column; gap: 8px; }
+
+.tasaInputGroup { display: flex; flex-direction: column; gap: 8px; }
+
+.tasaInputWrap { position: relative; display: flex; align-items: center; }
+
+.tasaInput {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-base);
+  outline: none;
+  background: white;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.tasaInput:focus { border-color: var(--color-accent); }
+.tasaInputError { border-color: var(--color-error); }
+
+.tasaInputSuffix {
+  position: absolute;
+  right: 12px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-400);
+  pointer-events: none;
+}
+
+.tasaActions { display: flex; align-items: center; gap: 8px; }
+
+.cancelTasaBtn {
+  background: none;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--color-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cancelTasaBtn:hover { border-color: var(--color-gray-400); color: var(--color-gray-700); }
+
+.tasaErrorMsg { font-size: var(--font-size-xs); color: var(--color-error); }
+.tasaHint { font-size: var(--font-size-xs); color: var(--color-gray-400); }
+
+/* ── Table ───────────────────────────────────────────────── */
+.tableWrapper { overflow-x: auto; }
+
+.table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+
+.th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-gray-100);
+  white-space: nowrap;
+}
+
+.tr { transition: background 0.1s; }
+.tr:hover { background: var(--color-gray-50); }
+
+.td {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-gray-50);
+  color: var(--color-gray-700);
+  vertical-align: middle;
+}
+
+.tableLoading { display: flex; justify-content: center; padding: 32px; }
+
+.emptyTable { text-align: center; padding: 40px 16px; }
+.emptyTitle { font-size: var(--font-size-base); font-weight: 600; color: var(--color-gray-500); }
+.emptyMsg { font-size: var(--font-size-sm); color: var(--color-gray-400); margin-top: 4px; }
+
+/* ── Opción cobro badge ──────────────────────────────────── */
+.badgeAdelanto {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+.badgeNormal {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: var(--color-gray-100);
+  color: var(--color-gray-600);
+}
+
+/* ── Misc ────────────────────────────────────────────────── */
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40vh;
+  gap: 12px;
+}
+
+.notFound { font-size: var(--font-size-base); color: var(--color-gray-500); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .page { padding: 16px; }
+}
