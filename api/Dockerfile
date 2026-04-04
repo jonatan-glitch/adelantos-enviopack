@@ -28,7 +28,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
 # Cache bust — increment to force full rebuild
-ARG CACHE_BUST=2
+ARG CACHE_BUST=3
 
 # Copy source
 COPY . .
@@ -65,8 +65,9 @@ COPY --from=builder /app /app
 # Nginx config template (PORT is injected at runtime by Railway)
 COPY docker/nginx.conf.template /etc/nginx/nginx.conf.template
 
-# PHP-FPM listens on unix socket
+# PHP-FPM pool config — remove Alpine's zz-docker.conf so our www.conf is authoritative
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+RUN rm -f /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/www.conf.default
 
 # Supervisord config
 COPY docker/supervisord.conf /etc/supervisord.conf

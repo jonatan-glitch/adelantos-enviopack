@@ -25,6 +25,12 @@ http {
         access_log /dev/stdout;
         error_log  /dev/stderr warn;
 
+        # Static ping — bypasses PHP, useful to confirm nginx is alive
+        location = /ping {
+            return 200 "pong\n";
+            add_header Content-Type text/plain;
+        }
+
         # Health check — no PHP needed
         location = /api/health {
             try_files $uri /index.php$is_args$args;
