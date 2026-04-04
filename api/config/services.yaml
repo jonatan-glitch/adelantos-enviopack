@@ -1,8 +1,8 @@
 parameters:
     app.resend_api_key: '%env(default::RESEND_API_KEY)%'
-    app.from_email: '%env(default:adelantos@enviopack.com:EMAIL_FROM)%'
-    app.from_name: '%env(default:Enviopack Adelantos:EMAIL_FROM_NAME)%'
-    app.frontend_url: '%env(default:https://adelantos-app.vercel.app:FRONTEND_URL)%'
+    app.from_email: 'adelantos@enviopack.com'
+    app.from_name: 'Enviopack Adelantos'
+    app.frontend_url: 'https://adelantos-app.vercel.app'
 
 services:
     _defaults:
