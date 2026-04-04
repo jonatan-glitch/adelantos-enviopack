@@ -32,8 +32,8 @@ php bin/console doctrine:migrations:migrate --no-interaction --env=prod 2>&1 || 
 
 echo "==> Seeds..."
 if [ "${SEED_DB:-0}" = "1" ]; then
-    php bin/console doctrine:fixtures:load --no-interaction --env=prod --no-debug 2>&1 || \
-        echo "    (fixtures fallaron)"
+    php bin/console app:create-admin --env=prod --no-debug 2>&1 || \
+        echo "    (seed falló)"
 fi
 
 echo "==> Iniciando php-fpm + nginx (PORT=${PORT})..."
