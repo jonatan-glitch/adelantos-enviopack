@@ -23,7 +23,7 @@ export class ErrorResponse extends Error {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.APP_API_URL ?? 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -32,7 +32,7 @@ const api = axios.create({
 
 const refreshTokenFn = async (refreshToken: string) => {
   const { data } = await axios.post<{ data: { token: string; refresh_token: string } }>(
-    `${import.meta.env.APP_API_URL ?? 'http://localhost:8000'}/api/token/refresh`,
+    `${import.meta.env.VITE_API_URL ?? 'http://localhost:8000'}/api/token/refresh`,
     { refresh_token: refreshToken }
   )
   return data.data
