@@ -14,6 +14,7 @@
   "dependencies": {
     "@enviopack/epic-ui": "file:./vendor/enviopack-epic-ui-0.0.28-alpha.tgz",
     "@reduxjs/toolkit": "^2.3.0",
+    "@sentry/react": "^10.47.0",
     "@tanstack/react-query": "^5.62.0",
     "axios": "^1.7.9",
     "dayjs": "^1.11.13",

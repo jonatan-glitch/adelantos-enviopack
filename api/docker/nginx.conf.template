@@ -12,6 +12,7 @@ http {
 
     sendfile on;
     keepalive_timeout 65;
+    client_max_body_size 25m;
 
     # Rate limiting: max 10 login attempts per minute per IP
     limit_req_zone $binary_remote_addr zone=login:10m rate=10r/m;

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, CheckCircle, AlertCircle } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, CreditCard } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura } from '@/domain/models'

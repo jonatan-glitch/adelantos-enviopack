@@ -57,6 +57,11 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
  && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini \
  && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
 
+# PHP upload limits
+RUN echo "upload_max_filesize=20M" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "post_max_size=25M" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "memory_limit=256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 WORKDIR /app
 
 # Copy built app

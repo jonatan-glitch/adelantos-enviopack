@@ -7,6 +7,7 @@ use App\Entity\Factura;
 use App\Repository\ChoferRepository;
 use App\Repository\FacturaRepository;
 use App\Response\FacturaResponse;
+use App\Service\S3Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ class FacturaController extends AbstractApiController
         private EntityManagerInterface $em,
         private ChoferRepository       $choferRepo,
         private FacturaRepository      $facturaRepo,
+        private S3Service              $s3,
     ) {}
 
     // ── GET /api/facturas ─────────────────────────────────────────────────────
@@ -115,5 +117,78 @@ class FacturaController extends AbstractApiController
         $this->em->flush();
 
         return $this->created(FacturaResponse::fromEntity($factura));
+    }
+
+    // ── POST /api/facturas/subir ───────────────────────────────────────────────
+
+    #[Route('/subir', name: 'chofer_facturas_subir', methods: ['POST'])]
+    public function subir(Request $request): JsonResponse
+    {
+        $usuario = $this->getUsuario();
+        $chofer  = $this->choferRepo->findOneBy(['usuario' => $usuario, 'eliminado' => false]);
+        if (!$chofer) {
+            return new JsonResponse(['code' => 403, 'message' => 'Perfil de chofer no encontrado.'], 403);
+        }
+
+        $facturaId = (int)$request->request->get('factura_id', 0);
+        $factura   = $this->facturaRepo->findOneBy(['id' => $facturaId, 'chofer' => $chofer, 'eliminado' => false]);
+        if (!$factura) {
+            return new JsonResponse(['code' => 404, 'message' => 'Factura no encontrada.'], 404);
+        }
+        if ($factura->getEstado() !== Factura::ESTADO_PENDIENTE_COBRO) {
+            return new JsonResponse(['code' => 422, 'message' => 'Esta factura ya fue procesada.'], 422);
+        }
+
+        $fileFactura = $request->files->get('archivo_factura');
+        if (!$fileFactura) {
+            return new JsonResponse(['code' => 422, 'message' => 'El archivo de factura es requerido.'], 422);
+        }
+
+        $opcion      = $request->request->get('opcion_cobro', 'normal');
+        $montoFactura = (float)$request->request->get('monto_factura', 0);
+        $fileNC       = $request->files->get('archivo_nota_credito');
+        $montoNC      = (float)$request->request->get('monto_nota_credito', 0);
+
+        if ($montoFactura <= 0) {
+            return new JsonResponse(['code' => 422, 'message' => 'El monto de la factura es requerido.'], 422);
+        }
+        if ($opcion === 'adelanto' && !$fileNC) {
+            return new JsonResponse(['code' => 422, 'message' => 'La nota de crédito es requerida para cobro adelantado.'], 422);
+        }
+
+        try {
+            $slug = date('Ymd') . '-' . $chofer->getId() . '-' . $factura->getId();
+
+            // Upload invoice file
+            $ext      = strtolower($fileFactura->getClientOriginalExtension() ?: 'pdf');
+            $keyFact  = "facturas/{$slug}/factura.{$ext}";
+            $urlFact  = $this->s3->isConfigured()
+                ? $this->s3->upload($fileFactura->getPathname(), $keyFact, $fileFactura->getMimeType() ?: 'application/pdf')
+                : null;
+
+            $urlNC = null;
+            if ($fileNC) {
+                $extNC   = strtolower($fileNC->getClientOriginalExtension() ?: 'pdf');
+                $keyNC   = "facturas/{$slug}/nota-credito.{$extNC}";
+                $urlNC   = $this->s3->isConfigured()
+                    ? $this->s3->upload($fileNC->getPathname(), $keyNC, $fileNC->getMimeType() ?: 'application/pdf')
+                    : null;
+            }
+
+            $montoNeto = $montoFactura - ($opcion === 'adelanto' ? $montoNC : 0);
+
+            $factura->setMontoBruto($montoFactura);
+            $factura->setMontoNotaCredito($opcion === 'adelanto' ? $montoNC : null);
+            $factura->setMontoNeto($montoNeto);
+            $factura->setOpcionCobro($opcion);
+            if ($urlFact) { $factura->setArchivoFacturaUrl($urlFact); }
+            if ($urlNC)   { $factura->setArchivoNotaCreditoUrl($urlNC); }
+
+            $this->em->flush();
+        } catch (\RuntimeException $e) {
+            return new JsonResponse(['code' => 500, 'message' => 'Error al subir archivos: ' . $e->getMessage()], 500);
+        }
+
+        return $this->json(FacturaResponse::fromEntity($factura));
     }
 }
