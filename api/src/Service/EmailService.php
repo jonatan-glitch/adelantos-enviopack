@@ -9,16 +9,12 @@ class EmailService
     private string $fromName;
     private string $frontendUrl;
 
-    public function __construct(
-        string $resendApiKey,
-        string $fromEmail,
-        string $fromName,
-        string $frontendUrl,
-    ) {
-        $this->apiKey      = $resendApiKey;
-        $this->fromEmail   = $fromEmail;
-        $this->fromName    = $fromName;
-        $this->frontendUrl = rtrim($frontendUrl, '/');
+    public function __construct()
+    {
+        $this->apiKey      = $_ENV['RESEND_API_KEY'] ?? '';
+        $this->fromEmail   = $_ENV['EMAIL_FROM']      ?? 'adelantos@enviopack.com';
+        $this->fromName    = $_ENV['EMAIL_FROM_NAME'] ?? 'Enviopack Adelantos';
+        $this->frontendUrl = rtrim($_ENV['FRONTEND_URL'] ?? 'https://adelantos-app.vercel.app', '/');
     }
 
     public function sendInvitacion(string $toEmail, string $token): void
