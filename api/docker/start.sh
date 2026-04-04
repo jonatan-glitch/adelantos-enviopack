@@ -21,8 +21,10 @@ echo "==> Generando nginx.conf (PORT=${PORT})..."
 envsubst '${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 echo "==> Cache Symfony..."
-php bin/console cache:clear --env=prod --no-debug 2>/dev/null || true
-php bin/console cache:warmup --env=prod --no-debug 2>/dev/null || true
+php bin/console cache:clear --env=prod --no-debug 2>&1 || true
+php bin/console cache:warmup --env=prod --no-debug 2>&1 || true
+# Los archivos de cache se crean como root; www-data (php-fpm) los necesita escribibles
+chmod -R 777 var/
 
 echo "==> Migraciones..."
 php bin/console doctrine:migrations:migrate --no-interaction --env=prod 2>&1 || \
