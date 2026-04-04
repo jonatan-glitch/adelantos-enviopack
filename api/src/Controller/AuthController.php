@@ -7,6 +7,7 @@ use App\Repository\InvitacionChoferRepository;
 use App\Repository\PasswordResetTokenRepository;
 use App\Repository\UsuarioRepository;
 use App\Service\ChoferService;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,6 +92,7 @@ class AuthController extends AbstractApiController
         UsuarioRepository $usuarioRepo,
         PasswordResetTokenRepository $tokenRepo,
         EntityManagerInterface $em,
+        EmailService $emailService,
     ): JsonResponse {
         $data  = json_decode($request->getContent(), true) ?? [];
         $email = trim($data['email'] ?? '');
@@ -122,7 +124,7 @@ class AuthController extends AbstractApiController
         $em->persist($token);
         $em->flush();
 
-        // TODO: send email with reset link using $token->getToken()
+        $emailService->sendRecuperarContrasena($usuario->getEmail(), $token->getToken());
 
         return $response;
     }

@@ -21,6 +21,7 @@ class ChoferService
         private UsuarioRepository           $usuarioRepo,
         private InvitacionChoferRepository  $invitacionRepo,
         private UserPasswordHasherInterface $hasher,
+        private EmailService                $emailService,
     ) {}
 
     public function invitar(string $email): InvitacionChofer
@@ -41,8 +42,7 @@ class ChoferService
         $this->em->persist($invitacion);
         $this->em->flush();
 
-        // TODO: enviar email con link de registro
-        // $this->mailer->send(...token...)
+        $this->emailService->sendInvitacion($email, $invitacion->getToken());
 
         return $invitacion;
     }
