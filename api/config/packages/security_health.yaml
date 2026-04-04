@@ -1,0 +1,2 @@
+# Permite acceso público al health check sin JWT
+# Este archivo extiende security.yaml sin modificarlo

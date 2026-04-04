@@ -1,0 +1,15 @@
+# Node
+app/node_modules/
+app/dist/
+app/.env.local
+
+# Symfony
+api/vendor/
+api/var/
+api/.env.local
+api/.env.*.local
+api/config/jwt/*.pem
+
+# General
+.DS_Store
+*.log

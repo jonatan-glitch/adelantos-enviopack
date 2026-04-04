@@ -1,0 +1,44 @@
+security:
+    password_hashers:
+        App\Entity\Usuario:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\Usuario
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        login:
+            pattern: ^/api/login$
+            stateless: true
+            json_login:
+                check_path: api_login
+                username_path: email
+                password_path: contrasena
+                success_handler: App\Security\AuthenticationSuccessHandler
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+            user_checker: App\Security\UserChecker
+
+    access_control:
+        - { path: ^/api/health, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/recuperar-contrasena, roles: PUBLIC_ACCESS }
+        - { path: ^/api/registro, roles: PUBLIC_ACCESS }
+        - { path: ^/api/admin, roles: [ROLE_ENVIOPACK_ADMIN, ROLE_OWNER, ROLE_ADMINISTRADOR] }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+    role_hierarchy:
+        ROLE_OWNER: ROLE_ADMINISTRADOR
+        ROLE_ENVIOPACK_ADMIN: [ROLE_OWNER, ROLE_ALLOWED_TO_SWITCH]

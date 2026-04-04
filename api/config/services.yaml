@@ -1,0 +1,37 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Security\UserChecker:
+        tags:
+            - { name: security.user_checker }
+
+    App\EventListener\ApiExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, priority: 200 }
+
+    App\EventListener\ApiResponseListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, priority: -10 }
+
+    App\EventListener\JWTCreatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJwtCreated }
+
+    App\Security\AuthenticationSuccessHandler:
+        arguments:
+            $jwtManager: '@lexik_jwt_authentication.jwt_manager'
+            $em: '@doctrine.orm.entity_manager'
+            $sessionContext: '@App\Security\JwtSessionContext'
+
+    App\Security\JwtSessionContext: ~
