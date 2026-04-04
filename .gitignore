@@ -13,4 +13,3 @@ api/config/jwt/*.pem
 # General
 .DS_Store
 *.log
-app/vendor/enviopack-epic-ui-0.0.28-alpha.tgz

@@ -4,4 +4,3 @@ dist
 .env.local
 .DS_Store
 .vercel
-vendor/enviopack-epic-ui-0.0.28-alpha.tgz
