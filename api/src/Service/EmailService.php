@@ -68,7 +68,7 @@ class EmailService
         $monto  = number_format($proforma->getMonto(), 2, ',', '.');
         $periodo = $proforma->getPeriodo();
         $vencimiento = $proforma->getFechaVencimiento()->format('d/m/Y');
-        $link = "{$this->frontendUrl}/proformas";
+        $link = "{$this->frontendUrl}/facturas";
 
         $html = <<<HTML
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
