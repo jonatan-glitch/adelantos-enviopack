@@ -18,6 +18,7 @@ import { ROUTES } from '@/domain/constants'
 import { useRoles } from '@/hooks/useRoles'
 import { useLogout } from '@/hooks/useLogout'
 import { useAppSelector } from '@/hooks/useAppSelector'
+import logoWhite from '@/assets/logotipo-enviopack-white.svg'
 import styles from './Sidenav.module.css'
 
 interface NavItemDef {
@@ -63,11 +64,7 @@ export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
     <aside className={`${styles.sidenav} ${isOpen ? styles.sidenavOpen : ''}`}>
       {/* Logo */}
       <div className={styles.logo}>
-        <div className={styles.logoMark}>EP</div>
-        <div>
-          <p className={styles.logoName}>Enviopack</p>
-          <p className={styles.logoSubtitle}>Adelantos</p>
-        </div>
+        <img src={logoWhite} alt="Enviopack" className={styles.logoImg} />
         <button className={styles.logoClose} onClick={onClose}>
           <X size={18} />
         </button>

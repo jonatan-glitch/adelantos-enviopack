@@ -19,31 +19,9 @@
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.logoMark {
-  width: 36px;
-  height: 36px;
-  background: var(--color-accent);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  color: white;
-  flex-shrink: 0;
-}
-
-.logoName {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  color: white;
-  line-height: 1.2;
-}
-
-.logoSubtitle {
-  font-size: var(--font-size-xs);
-  color: rgba(255,255,255,0.5);
-  line-height: 1.2;
+.logoImg {
+  height: 24px;
+  width: auto;
 }
 
 .logoClose {
