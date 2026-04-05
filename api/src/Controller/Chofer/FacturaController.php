@@ -129,10 +129,15 @@ class FacturaController extends AbstractApiController
 
         $file = $request->files->get('archivo');
         if (!$file) {
-            return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo.'], 422);
+            return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo. Verificá que el campo se llame "archivo".'], 422);
         }
 
-        $url = $this->uploadFile($file, $factura, 'factura');
+        try {
+            $url = $this->uploadFile($file, $factura, 'factura');
+        } catch (\Throwable $e) {
+            error_log("[subirArchivo] Upload failed: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}");
+            return new JsonResponse(['code' => 500, 'message' => 'Error al guardar archivo: ' . $e->getMessage()], 500);
+        }
 
         $factura->setArchivoFacturaUrl($url);
         $this->em->flush();
@@ -150,10 +155,15 @@ class FacturaController extends AbstractApiController
 
         $file = $request->files->get('archivo');
         if (!$file) {
-            return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo.'], 422);
+            return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo. Verificá que el campo se llame "archivo".'], 422);
         }
 
-        $url = $this->uploadFile($file, $factura, 'nota-credito');
+        try {
+            $url = $this->uploadFile($file, $factura, 'nota-credito');
+        } catch (\Throwable $e) {
+            error_log("[subirNotaCredito] Upload failed: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}");
+            return new JsonResponse(['code' => 500, 'message' => 'Error al guardar archivo: ' . $e->getMessage()], 500);
+        }
 
         $factura->setArchivoNotaCreditoUrl($url);
         $this->em->flush();
