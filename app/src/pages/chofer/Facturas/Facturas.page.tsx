@@ -205,7 +205,7 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
 
     setSubmitting(true)
     try {
-      // Step 1: Create factura linked to proforma
+      // Step 1: Create factura (JSON)
       const res = await api.post('/api/facturas', {
         numero_factura: numeroFactura,
         monto_bruto: Number(montoFactura),
@@ -214,21 +214,28 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
         proforma_id: proforma.id,
       })
       const facturaId = res.data?.data?.id
-
       if (!facturaId) throw new Error('No factura ID')
 
-      // Step 2: Upload files
-      const form = new FormData()
-      form.append('factura_id', String(facturaId))
-      form.append('opcion_cobro', opcion)
-      form.append('archivo_factura', fileFactura)
-      form.append('monto_factura', montoFactura)
-      if (opcion === 'adelanto' && fileNC) {
-        form.append('archivo_nota_credito', fileNC)
-        form.append('monto_nota_credito', String(descuento))
-      }
-      await api.post('/api/facturas/subir', form, {
+      // Step 2: Upload factura file
+      const fdFactura = new FormData()
+      fdFactura.append('archivo', fileFactura)
+      await api.post(`/api/facturas/${facturaId}/archivo`, fdFactura, {
         headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      // Step 3: Upload nota de crédito (if adelanto)
+      if (opcion === 'adelanto' && fileNC) {
+        const fdNC = new FormData()
+        fdNC.append('archivo', fileNC)
+        await api.post(`/api/facturas/${facturaId}/nota-credito`, fdNC, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+      }
+
+      // Step 4: Confirm payment option + transition estado (JSON)
+      await api.put(`/api/facturas/${facturaId}/confirmar`, {
+        opcion_cobro: opcion,
+        monto_nota_credito: opcion === 'adelanto' ? descuento : null,
       })
 
       onSuccess()

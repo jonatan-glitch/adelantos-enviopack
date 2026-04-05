@@ -119,88 +119,129 @@ class FacturaController extends AbstractApiController
         return $this->created(FacturaResponse::fromEntity($factura));
     }
 
-    // ── POST /api/facturas/subir ───────────────────────────────────────────────
+    // ── POST /api/facturas/{id}/archivo ─────────────────────────────────────────
 
-    #[Route('/subir', name: 'chofer_facturas_subir', methods: ['POST'])]
-    public function subir(Request $request): JsonResponse
+    #[Route('/{id}/archivo', name: 'chofer_facturas_archivo', methods: ['POST'])]
+    public function subirArchivo(int $id, Request $request): JsonResponse
+    {
+        $factura = $this->getFacturaChofer($id);
+        if ($factura instanceof JsonResponse) return $factura;
+
+        $file = $request->files->get('archivo');
+        if (!$file) {
+            return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo.'], 422);
+        }
+
+        $slug = date('Ymd') . '-' . $factura->getChofer()->getId() . '-' . $factura->getId();
+        $ext  = strtolower($file->getClientOriginalExtension() ?: 'pdf');
+        $key  = "facturas/{$slug}/factura.{$ext}";
+
+        $url = $this->s3->isConfigured()
+            ? $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf')
+            : null;
+
+        if ($url) {
+            $factura->setArchivoFacturaUrl($url);
+            $this->em->flush();
+        }
+
+        return $this->ok(['archivo_factura_url' => $url]);
+    }
+
+    // ── POST /api/facturas/{id}/nota-credito ─────────────────────────────────────
+
+    #[Route('/{id}/nota-credito', name: 'chofer_facturas_nota_credito', methods: ['POST'])]
+    public function subirNotaCredito(int $id, Request $request): JsonResponse
+    {
+        $factura = $this->getFacturaChofer($id);
+        if ($factura instanceof JsonResponse) return $factura;
+
+        $file = $request->files->get('archivo');
+        if (!$file) {
+            return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo.'], 422);
+        }
+
+        $slug = date('Ymd') . '-' . $factura->getChofer()->getId() . '-' . $factura->getId();
+        $ext  = strtolower($file->getClientOriginalExtension() ?: 'pdf');
+        $key  = "facturas/{$slug}/nota-credito.{$ext}";
+
+        $url = $this->s3->isConfigured()
+            ? $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf')
+            : null;
+
+        if ($url) {
+            $factura->setArchivoNotaCreditoUrl($url);
+            $this->em->flush();
+        }
+
+        return $this->ok(['archivo_nota_credito_url' => $url]);
+    }
+
+    // ── PUT /api/facturas/{id}/confirmar ─────────────────────────────────────────
+
+    #[Route('/{id}/confirmar', name: 'chofer_facturas_confirmar', methods: ['PUT'])]
+    public function confirmar(int $id, Request $request): JsonResponse
+    {
+        $factura = $this->getFacturaChofer($id);
+        if ($factura instanceof JsonResponse) return $factura;
+
+        if ($factura->getEstado() !== Factura::ESTADO_PENDIENTE_COBRO) {
+            return new JsonResponse(['code' => 422, 'message' => 'Esta factura ya fue procesada.'], 422);
+        }
+
+        $data   = json_decode($request->getContent(), true) ?? [];
+        $opcion = $data['opcion_cobro'] ?? 'normal';
+
+        if (!in_array($opcion, ['normal', 'adelanto'])) {
+            return new JsonResponse(['code' => 422, 'message' => 'Opción de cobro inválida.'], 422);
+        }
+
+        if (!$factura->getArchivoFacturaUrl()) {
+            return new JsonResponse(['code' => 422, 'message' => 'Debés subir el archivo de factura primero.'], 422);
+        }
+        if ($opcion === 'adelanto' && !$factura->getArchivoNotaCreditoUrl()) {
+            return new JsonResponse(['code' => 422, 'message' => 'Debés subir la nota de crédito para cobro adelantado.'], 422);
+        }
+
+        $montoNC = isset($data['monto_nota_credito']) && is_numeric($data['monto_nota_credito'])
+            ? (float)$data['monto_nota_credito'] : null;
+
+        $factura->setOpcionCobro($opcion);
+        if ($opcion === 'adelanto' && $montoNC !== null) {
+            $factura->setMontoNotaCredito($montoNC);
+            $factura->setMontoNeto($factura->getMontoBruto() - $montoNC);
+        }
+
+        // Transition estado
+        if ($opcion === 'normal') {
+            $factura->setEstado(Factura::ESTADO_COBRO_NORMAL);
+        }
+        // For 'adelanto', estado stays pendiente_cobro until SolicitarAdelanto
+
+        // Mark linked proforma as facturada
+        $proforma = $factura->getProforma();
+        if ($proforma && $proforma->getEstado() === \App\Entity\Proforma::ESTADO_PENDIENTE) {
+            $proforma->setEstado(\App\Entity\Proforma::ESTADO_FACTURADA);
+        }
+
+        $this->em->flush();
+
+        return $this->ok(FacturaResponse::fromEntity($factura));
+    }
+
+    // ── Helper ───────────────────────────────────────────────────────────────────
+
+    private function getFacturaChofer(int $id): Factura|JsonResponse
     {
         $usuario = $this->getUsuario();
         $chofer  = $this->choferRepo->findOneBy(['usuario' => $usuario, 'eliminado' => false]);
         if (!$chofer) {
             return new JsonResponse(['code' => 403, 'message' => 'Perfil de chofer no encontrado.'], 403);
         }
-
-        $facturaId = (int)$request->request->get('factura_id', 0);
-        $factura   = $this->facturaRepo->findOneBy(['id' => $facturaId, 'chofer' => $chofer, 'eliminado' => false]);
+        $factura = $this->facturaRepo->findOneBy(['id' => $id, 'chofer' => $chofer, 'eliminado' => false]);
         if (!$factura) {
             return new JsonResponse(['code' => 404, 'message' => 'Factura no encontrada.'], 404);
         }
-        if ($factura->getEstado() !== Factura::ESTADO_PENDIENTE_COBRO) {
-            return new JsonResponse(['code' => 422, 'message' => 'Esta factura ya fue procesada.'], 422);
-        }
-
-        $fileFactura = $request->files->get('archivo_factura');
-        if (!$fileFactura) {
-            return new JsonResponse(['code' => 422, 'message' => 'El archivo de factura es requerido.'], 422);
-        }
-
-        $opcion      = $request->request->get('opcion_cobro', 'normal');
-        $montoFactura = (float)$request->request->get('monto_factura', 0);
-        $fileNC       = $request->files->get('archivo_nota_credito');
-        $montoNC      = (float)$request->request->get('monto_nota_credito', 0);
-
-        if ($montoFactura <= 0) {
-            return new JsonResponse(['code' => 422, 'message' => 'El monto de la factura es requerido.'], 422);
-        }
-        if ($opcion === 'adelanto' && !$fileNC) {
-            return new JsonResponse(['code' => 422, 'message' => 'La nota de crédito es requerida para cobro adelantado.'], 422);
-        }
-
-        try {
-            $slug = date('Ymd') . '-' . $chofer->getId() . '-' . $factura->getId();
-
-            // Upload invoice file
-            $ext      = strtolower($fileFactura->getClientOriginalExtension() ?: 'pdf');
-            $keyFact  = "facturas/{$slug}/factura.{$ext}";
-            $urlFact  = $this->s3->isConfigured()
-                ? $this->s3->upload($fileFactura->getPathname(), $keyFact, $fileFactura->getMimeType() ?: 'application/pdf')
-                : null;
-
-            $urlNC = null;
-            if ($fileNC) {
-                $extNC   = strtolower($fileNC->getClientOriginalExtension() ?: 'pdf');
-                $keyNC   = "facturas/{$slug}/nota-credito.{$extNC}";
-                $urlNC   = $this->s3->isConfigured()
-                    ? $this->s3->upload($fileNC->getPathname(), $keyNC, $fileNC->getMimeType() ?: 'application/pdf')
-                    : null;
-            }
-
-            $montoNeto = $montoFactura - ($opcion === 'adelanto' ? $montoNC : 0);
-
-            $factura->setMontoBruto($montoFactura);
-            $factura->setMontoNotaCredito($opcion === 'adelanto' ? $montoNC : null);
-            $factura->setMontoNeto($montoNeto);
-            $factura->setOpcionCobro($opcion);
-            if ($urlFact) { $factura->setArchivoFacturaUrl($urlFact); }
-            if ($urlNC)   { $factura->setArchivoNotaCreditoUrl($urlNC); }
-
-            // Transition estado based on payment option
-            if ($opcion === 'normal') {
-                $factura->setEstado(Factura::ESTADO_COBRO_NORMAL);
-            }
-            // For 'adelanto', estado stays pendiente_cobro until SolicitarAdelanto
-
-            // Mark linked proforma as facturada
-            $proforma = $factura->getProforma();
-            if ($proforma && $proforma->getEstado() === \App\Entity\Proforma::ESTADO_PENDIENTE) {
-                $proforma->setEstado(\App\Entity\Proforma::ESTADO_FACTURADA);
-            }
-
-            $this->em->flush();
-        } catch (\RuntimeException $e) {
-            return new JsonResponse(['code' => 500, 'message' => 'Error al subir archivos: ' . $e->getMessage()], 500);
-        }
-
-        return $this->json(FacturaResponse::fromEntity($factura));
+        return $factura;
     }
 }
