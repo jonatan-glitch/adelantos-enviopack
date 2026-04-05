@@ -13,6 +13,7 @@ class ProformaResponse
     public float $tasa_aplicada;
     public string $fecha_vencimiento;
     public ?string $descripcion;
+    public ?string $documento_url;
     public string $estado;
     public string $created_at;
 
@@ -26,6 +27,7 @@ class ProformaResponse
         $dto->tasa_aplicada     = $p->getTasaAplicada();
         $dto->fecha_vencimiento = $p->getFechaVencimiento()->format('Y-m-d');
         $dto->descripcion       = $p->getDescripcion();
+        $dto->documento_url     = $p->getDocumentoUrl();
         $dto->estado            = $p->getEstado();
         $dto->created_at        = $p->getCreatedAt()->format('Y-m-d\TH:i:s\Z');
         return $dto;

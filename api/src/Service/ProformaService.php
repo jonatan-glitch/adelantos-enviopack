@@ -8,6 +8,7 @@ use App\Repository\ChoferRepository;
 use App\Repository\ConfiguracionSistemaRepository;
 use App\Repository\ProformaRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ProformaService
 {
@@ -16,9 +17,11 @@ class ProformaService
         private ChoferRepository               $choferRepo,
         private ProformaRepository             $proformaRepo,
         private ConfiguracionSistemaRepository $configRepo,
+        private S3Service                      $s3,
+        private EmailService                   $emailService,
     ) {}
 
-    public function crear(array $data): Proforma
+    public function crear(array $data, ?UploadedFile $file = null): Proforma
     {
         $chofer = $this->choferRepo->find($data['chofer_id']);
         if (!$chofer) {
@@ -26,7 +29,9 @@ class ProformaService
         }
 
         $config = $this->configRepo->find(1) ?? new ConfiguracionSistema();
-        $tasa   = $chofer->getTasaPersonal() ?? $config->getTasaGlobal();
+        $tasa   = isset($data['tasa_aplicada'])
+            ? (float)$data['tasa_aplicada']
+            : ($chofer->getTasaPersonal() ?? $config->getTasaGlobal());
 
         $proforma = new Proforma();
         $proforma->setChofer($chofer);
@@ -36,8 +41,23 @@ class ProformaService
         $proforma->setFechaVencimiento(new \DateTimeImmutable($data['fecha_vencimiento']));
         $proforma->setDescripcion($data['descripcion'] ?? null);
 
+        // Upload document to S3/R2 if provided
+        if ($file && $this->s3->isConfigured()) {
+            $ext = $file->guessExtension() ?: 'bin';
+            $key = 'proformas/' . date('Y/m') . '/' . bin2hex(random_bytes(8)) . '.' . $ext;
+            $url = $this->s3->upload($file->getPathname(), $key, $file->getMimeType());
+            $proforma->setDocumentoUrl($url);
+        }
+
         $this->em->persist($proforma);
         $this->em->flush();
+
+        // Notify chofer via email
+        $this->emailService->sendProformaNotificacion(
+            $chofer->getEmail(),
+            $chofer->getNombre(),
+            $proforma
+        );
 
         return $proforma;
     }

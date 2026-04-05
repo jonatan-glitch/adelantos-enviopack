@@ -28,8 +28,17 @@ class ProformaController extends AbstractApiController
     #[Route('', name: 'admin_proformas_crear', methods: ['POST'])]
     public function crear(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
-        $proforma = $this->proformaService->crear($data);
+        $contentType = $request->headers->get('Content-Type', '');
+
+        if (str_contains($contentType, 'multipart/form-data')) {
+            $data = $request->request->all();
+            $file = $request->files->get('documento');
+        } else {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $file = null;
+        }
+
+        $proforma = $this->proformaService->crear($data, $file);
         return $this->created(ProformaResponse::fromEntity($proforma));
     }
 }

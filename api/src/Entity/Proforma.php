@@ -37,6 +37,9 @@ class Proforma
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $descripcion = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $documento_url = null;
+
     #[ORM\Column(length: 20)]
     private string $estado = self::ESTADO_PENDIENTE;
 
@@ -66,6 +69,8 @@ class Proforma
     public function setDescripcion(?string $descripcion): static { $this->descripcion = $descripcion; return $this; }
     public function getEstado(): string { return $this->estado; }
     public function setEstado(string $estado): static { $this->estado = $estado; return $this; }
+    public function getDocumentoUrl(): ?string { return $this->documento_url; }
+    public function setDocumentoUrl(?string $url): static { $this->documento_url = $url; return $this; }
     public function isEliminado(): bool { return $this->eliminado; }
     public function setEliminado(bool $eliminado): static { $this->eliminado = $eliminado; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->created_at; }

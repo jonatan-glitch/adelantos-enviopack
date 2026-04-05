@@ -63,6 +63,34 @@ class EmailService
         return $this->send($toEmail, 'Recuperá tu contraseña — Enviopack Adelantos', $html);
     }
 
+    public function sendProformaNotificacion(string $toEmail, string $nombre, \App\Entity\Proforma $proforma): bool
+    {
+        $monto  = number_format($proforma->getMonto(), 2, ',', '.');
+        $periodo = $proforma->getPeriodo();
+        $vencimiento = $proforma->getFechaVencimiento()->format('d/m/Y');
+        $link = "{$this->frontendUrl}/proformas";
+
+        $html = <<<HTML
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
+          <h2 style="margin-top:0">Nueva proforma disponible</h2>
+          <p>Hola {$nombre},</p>
+          <p>Se generó una nueva proforma para vos:</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0">
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#555">Período</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">{$periodo}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#555">Monto</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">\${$monto}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#555">Vencimiento</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">{$vencimiento}</td></tr>
+          </table>
+          <a href="{$link}"
+             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+            Ver mis proformas
+          </a>
+          <p style="font-size:13px;color:#555">Si tenés alguna duda, contactá al administrador.</p>
+        </div>
+        HTML;
+
+        return $this->send($toEmail, "Nueva proforma — {$periodo}", $html);
+    }
+
     private function send(string $to, string $subject, string $html): bool
     {
         if (!$this->apiKey) {
