@@ -7,7 +7,7 @@ use App\Entity\Factura;
 use App\Repository\ChoferRepository;
 use App\Repository\FacturaRepository;
 use App\Response\FacturaResponse;
-use App\Service\S3Service;
+use App\Service\FileStorageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +20,7 @@ class FacturaController extends AbstractApiController
         private EntityManagerInterface $em,
         private ChoferRepository       $choferRepo,
         private FacturaRepository      $facturaRepo,
-        private S3Service              $s3,
+        private FileStorageService     $fileStorage,
     ) {}
 
     // ── GET /api/facturas ─────────────────────────────────────────────────────
@@ -227,29 +227,7 @@ class FacturaController extends AbstractApiController
 
     private function uploadFile(\Symfony\Component\HttpFoundation\File\UploadedFile $file, Factura $factura, string $type): string
     {
-        $slug = date('Ymd') . '-' . $factura->getChofer()->getId() . '-' . $factura->getId();
-        $ext  = strtolower($file->getClientOriginalExtension() ?: 'pdf');
-        $key  = "facturas/{$slug}/{$type}.{$ext}";
-
-        // Try S3 first
-        if ($this->s3->isConfigured()) {
-            try {
-                return $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf');
-            } catch (\Throwable $e) {
-                error_log("[FacturaController] S3 upload failed: {$e->getMessage()}");
-                // Fall through to local storage
-            }
-        }
-
-        // Fallback: store locally in public/uploads/
-        $uploadsDir = '/app/public/uploads/facturas/' . $slug;
-        if (!is_dir($uploadsDir)) {
-            mkdir($uploadsDir, 0777, true);
-        }
-        $localName = "{$type}.{$ext}";
-        $file->move($uploadsDir, $localName);
-
-        return "/uploads/facturas/{$slug}/{$localName}";
+        return $this->fileStorage->store($file);
     }
 
     private function getFacturaChofer(int $id): Factura|JsonResponse

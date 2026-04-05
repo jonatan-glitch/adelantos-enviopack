@@ -7,7 +7,7 @@ use App\Entity\Factura;
 use App\Exception\DomainException;
 use App\Repository\FacturaRepository;
 use App\Response\FacturaResponse;
-use App\Service\S3Service;
+use App\Service\FileStorageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +26,7 @@ class FacturaController extends AbstractApiController
     public function __construct(
         private EntityManagerInterface $em,
         private FacturaRepository      $facturaRepo,
-        private S3Service              $s3,
+        private FileStorageService     $fileStorage,
     ) {}
 
     #[Route('', name: 'admin_facturas_listar', methods: ['GET'])]
@@ -105,24 +105,7 @@ class FacturaController extends AbstractApiController
             return new JsonResponse(['code' => 400, 'message' => 'No se envió un archivo.'], 400);
         }
 
-        $ext = strtolower($file->getClientOriginalExtension() ?: 'pdf');
-        $key = 'comprobantes/' . date('Ymd') . '-' . $factura->getId() . '/comprobante.' . $ext;
-
-        $url = null;
-        if ($this->s3->isConfigured()) {
-            try {
-                $url = $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf');
-            } catch (\Throwable $e) {
-                error_log("[AdminFacturaController] S3 upload failed: {$e->getMessage()}");
-            }
-        }
-
-        if (!$url) {
-            $dir = '/app/public/uploads/' . dirname($key);
-            if (!is_dir($dir)) { mkdir($dir, 0777, true); }
-            $file->move($dir, basename($key));
-            $url = '/uploads/' . $key;
-        }
+        $url = $this->fileStorage->store($file);
 
         $factura->setComprobantePagoUrl($url);
         $this->em->flush();
