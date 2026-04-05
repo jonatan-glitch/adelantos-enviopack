@@ -213,7 +213,7 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
         fecha_emision: dayjs().format('YYYY-MM-DD'),
         proforma_id: proforma.id,
       })
-      const facturaId = res.data?.data?.id
+      const facturaId = res.data?.data?.id ?? res.data?.id
       if (!facturaId) throw new Error('No factura ID')
 
       // Step 2: Upload factura file
