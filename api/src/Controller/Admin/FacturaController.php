@@ -108,14 +108,24 @@ class FacturaController extends AbstractApiController
         $ext = strtolower($file->getClientOriginalExtension() ?: 'pdf');
         $key = 'comprobantes/' . date('Ymd') . '-' . $factura->getId() . '/comprobante.' . $ext;
 
-        $url = $this->s3->isConfigured()
-            ? $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf')
-            : null;
-
-        if ($url) {
-            $factura->setComprobantePagoUrl($url);
-            $this->em->flush();
+        $url = null;
+        if ($this->s3->isConfigured()) {
+            try {
+                $url = $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf');
+            } catch (\Throwable $e) {
+                error_log("[AdminFacturaController] S3 upload failed: {$e->getMessage()}");
+            }
         }
+
+        if (!$url) {
+            $dir = '/app/public/uploads/' . dirname($key);
+            if (!is_dir($dir)) { mkdir($dir, 0777, true); }
+            $file->move($dir, basename($key));
+            $url = '/uploads/' . $key;
+        }
+
+        $factura->setComprobantePagoUrl($url);
+        $this->em->flush();
 
         return $this->ok(['comprobante_url' => $url]);
     }

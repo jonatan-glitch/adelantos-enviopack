@@ -132,18 +132,10 @@ class FacturaController extends AbstractApiController
             return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo.'], 422);
         }
 
-        $slug = date('Ymd') . '-' . $factura->getChofer()->getId() . '-' . $factura->getId();
-        $ext  = strtolower($file->getClientOriginalExtension() ?: 'pdf');
-        $key  = "facturas/{$slug}/factura.{$ext}";
+        $url = $this->uploadFile($file, $factura, 'factura');
 
-        $url = $this->s3->isConfigured()
-            ? $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf')
-            : null;
-
-        if ($url) {
-            $factura->setArchivoFacturaUrl($url);
-            $this->em->flush();
-        }
+        $factura->setArchivoFacturaUrl($url);
+        $this->em->flush();
 
         return $this->ok(['archivo_factura_url' => $url]);
     }
@@ -161,18 +153,10 @@ class FacturaController extends AbstractApiController
             return new JsonResponse(['code' => 422, 'message' => 'No se envió un archivo.'], 422);
         }
 
-        $slug = date('Ymd') . '-' . $factura->getChofer()->getId() . '-' . $factura->getId();
-        $ext  = strtolower($file->getClientOriginalExtension() ?: 'pdf');
-        $key  = "facturas/{$slug}/nota-credito.{$ext}";
+        $url = $this->uploadFile($file, $factura, 'nota-credito');
 
-        $url = $this->s3->isConfigured()
-            ? $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf')
-            : null;
-
-        if ($url) {
-            $factura->setArchivoNotaCreditoUrl($url);
-            $this->em->flush();
-        }
+        $factura->setArchivoNotaCreditoUrl($url);
+        $this->em->flush();
 
         return $this->ok(['archivo_nota_credito_url' => $url]);
     }
@@ -229,7 +213,34 @@ class FacturaController extends AbstractApiController
         return $this->ok(FacturaResponse::fromEntity($factura));
     }
 
-    // ── Helper ───────────────────────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────────────
+
+    private function uploadFile(\Symfony\Component\HttpFoundation\File\UploadedFile $file, Factura $factura, string $type): string
+    {
+        $slug = date('Ymd') . '-' . $factura->getChofer()->getId() . '-' . $factura->getId();
+        $ext  = strtolower($file->getClientOriginalExtension() ?: 'pdf');
+        $key  = "facturas/{$slug}/{$type}.{$ext}";
+
+        // Try S3 first
+        if ($this->s3->isConfigured()) {
+            try {
+                return $this->s3->upload($file->getPathname(), $key, $file->getMimeType() ?: 'application/pdf');
+            } catch (\Throwable $e) {
+                error_log("[FacturaController] S3 upload failed: {$e->getMessage()}");
+                // Fall through to local storage
+            }
+        }
+
+        // Fallback: store locally in public/uploads/
+        $uploadsDir = '/app/public/uploads/facturas/' . $slug;
+        if (!is_dir($uploadsDir)) {
+            mkdir($uploadsDir, 0777, true);
+        }
+        $localName = "{$type}.{$ext}";
+        $file->move($uploadsDir, $localName);
+
+        return "/uploads/facturas/{$slug}/{$localName}";
+    }
 
     private function getFacturaChofer(int $id): Factura|JsonResponse
     {
