@@ -21,7 +21,7 @@ class ProformaService
         private EmailService                   $emailService,
     ) {}
 
-    public function crear(array $data, ?UploadedFile $file = null): Proforma
+    public function crear(array $data): Proforma
     {
         $chofer = $this->choferRepo->find($data['chofer_id']);
         if (!$chofer) {
@@ -41,14 +41,6 @@ class ProformaService
         $proforma->setFechaVencimiento(new \DateTimeImmutable($data['fecha_vencimiento']));
         $proforma->setDescripcion($data['descripcion'] ?? null);
 
-        // Upload document to S3/R2 if provided
-        if ($file && $this->s3->isConfigured()) {
-            $ext = $file->guessExtension() ?: 'bin';
-            $key = 'proformas/' . date('Y/m') . '/' . bin2hex(random_bytes(8)) . '.' . $ext;
-            $url = $this->s3->upload($file->getPathname(), $key, $file->getMimeType());
-            $proforma->setDocumentoUrl($url);
-        }
-
         $this->em->persist($proforma);
         $this->em->flush();
 
@@ -60,6 +52,26 @@ class ProformaService
         );
 
         return $proforma;
+    }
+
+    public function subirDocumento(int $proformaId, UploadedFile $file): string
+    {
+        $proforma = $this->proformaRepo->find($proformaId);
+        if (!$proforma) {
+            throw new \App\Exception\DomainException('Proforma no encontrada.');
+        }
+
+        if (!$this->s3->isConfigured()) {
+            throw new \App\Exception\DomainException('El almacenamiento de archivos no está configurado.');
+        }
+
+        $ext = $file->guessExtension() ?: 'bin';
+        $key = 'proformas/' . date('Y/m') . '/' . bin2hex(random_bytes(8)) . '.' . $ext;
+        $url = $this->s3->upload($file->getPathname(), $key, $file->getMimeType());
+        $proforma->setDocumentoUrl($url);
+        $this->em->flush();
+
+        return $url;
     }
 
     public function listar(int $page, int $limit, ?int $chofer_id = null): array

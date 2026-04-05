@@ -61,13 +61,21 @@ export const ProformasPage = () => {
   })
 
   const createMutation = useMutation({
-    mutationFn: (values: object) => {
-      const fd = new FormData()
-      Object.entries(values).forEach(([k, v]) => fd.append(k, String(v)))
-      if (docFile) fd.append('documento', docFile)
-      return api.post('/api/admin/proformas', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+    mutationFn: async (values: object) => {
+      // Create proforma with JSON
+      const res = await api.post('/api/admin/proformas', values)
+      const proformaId = res.data?.data?.id
+
+      // Upload document separately if present
+      if (docFile && proformaId) {
+        const fd = new FormData()
+        fd.append('documento', docFile)
+        await api.post(`/api/admin/proformas/${proformaId}/documento`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }).catch(() => toast.error('Proforma creada pero el documento no se pudo subir.'))
+      }
+
+      return res
     },
     onSuccess: () => {
       toast.success('Proforma creada. El chofer recibirá una notificación.')
@@ -75,7 +83,7 @@ export const ProformasPage = () => {
       setDocFile(null)
       qc.invalidateQueries({ queryKey: ['admin-proformas'] })
     },
-    onError: () => toast.error('Error al crear la proforma'),
+    onError: () => toast.error('Se produjo un error al enviar la proforma'),
   })
 
   const handleFileChange = (file: File | null) => {

@@ -28,17 +28,19 @@ class ProformaController extends AbstractApiController
     #[Route('', name: 'admin_proformas_crear', methods: ['POST'])]
     public function crear(Request $request): JsonResponse
     {
-        $contentType = $request->headers->get('Content-Type', '');
-
-        if (str_contains($contentType, 'multipart/form-data')) {
-            $data = $request->request->all();
-            $file = $request->files->get('documento');
-        } else {
-            $data = json_decode($request->getContent(), true) ?? [];
-            $file = null;
-        }
-
-        $proforma = $this->proformaService->crear($data, $file);
+        $data = json_decode($request->getContent(), true) ?? [];
+        $proforma = $this->proformaService->crear($data);
         return $this->created(ProformaResponse::fromEntity($proforma));
+    }
+
+    #[Route('/{id}/documento', name: 'admin_proformas_documento', methods: ['POST'])]
+    public function subirDocumento(int $id, Request $request): JsonResponse
+    {
+        $file = $request->files->get('documento');
+        if (!$file) {
+            return new JsonResponse(['code' => 400, 'message' => 'No se envió un archivo.'], 400);
+        }
+        $url = $this->proformaService->subirDocumento($id, $file);
+        return $this->ok(['documento_url' => $url]);
     }
 }
