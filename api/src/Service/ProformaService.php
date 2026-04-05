@@ -21,7 +21,7 @@ class ProformaService
         private EmailService                   $emailService,
     ) {}
 
-    public function crear(array $data): Proforma
+    public function crear(array $data): array
     {
         $chofer = $this->choferRepo->find($data['chofer_id']);
         if (!$chofer) {
@@ -45,13 +45,18 @@ class ProformaService
         $this->em->flush();
 
         // Notify chofer via email
-        $this->emailService->sendProformaNotificacion(
-            $chofer->getEmail(),
-            $chofer->getNombre(),
-            $proforma
-        );
+        $emailSent = false;
+        try {
+            $emailSent = $this->emailService->sendProformaNotificacion(
+                $chofer->getEmail(),
+                $chofer->getNombre(),
+                $proforma
+            );
+        } catch (\Throwable $e) {
+            error_log("[ProformaService] Email error: {$e->getMessage()}");
+        }
 
-        return $proforma;
+        return ['proforma' => $proforma, 'email_sent' => $emailSent];
     }
 
     public function subirDocumento(int $proformaId, UploadedFile $file): string

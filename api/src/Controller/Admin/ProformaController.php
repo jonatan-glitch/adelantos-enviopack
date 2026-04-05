@@ -29,8 +29,9 @@ class ProformaController extends AbstractApiController
     public function crear(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
-        $proforma = $this->proformaService->crear($data);
-        return $this->created(ProformaResponse::fromEntity($proforma));
+        $result = $this->proformaService->crear($data);
+        $response = ProformaResponse::fromEntity($result['proforma']);
+        return $this->created(['proforma' => $response, 'email_sent' => $result['email_sent']]);
     }
 
     #[Route('/{id}/documento', name: 'admin_proformas_documento', methods: ['POST'])]
