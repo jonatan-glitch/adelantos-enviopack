@@ -28,7 +28,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
 # Cache bust — increment to force full rebuild
-ARG CACHE_BUST=20
+ARG CACHE_BUST=21
 
 # Copy source
 COPY . .
@@ -87,7 +87,8 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
-RUN mkdir -p /var/log/nginx /run/nginx /var/log/supervisor /run/php-fpm
+RUN mkdir -p /var/log/nginx /run/nginx /var/log/supervisor /run/php-fpm /app/public/uploads \
+ && chmod -R 777 /app/public/uploads
 
 # Symfony cache/logs dirs
 RUN mkdir -p var/cache var/log \
