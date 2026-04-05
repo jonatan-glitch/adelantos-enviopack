@@ -286,6 +286,13 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
           </div>
         </div>
 
+        {opcion === 'adelanto' && (
+          <div className={styles.alertInfo}>
+            <AlertCircle size={16} />
+            <p>Debes cargar la factura por el total y una nota de crédito por el descuento.</p>
+          </div>
+        )}
+
         {/* Factura number */}
         <div className={styles.fieldGroup}>
           <label className={styles.fieldLabel}>Número de factura *</label>
