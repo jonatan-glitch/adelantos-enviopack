@@ -19,7 +19,7 @@ class FileStorageService
     {
         $archivo = new Archivo();
         $archivo->setNombre($file->getClientOriginalName());
-        $archivo->setMimeType($file->getMimeType() ?: 'application/octet-stream');
+        $archivo->setMimeType($file->getClientMimeType() ?: 'application/octet-stream');
         $archivo->setContenido(file_get_contents($file->getPathname()));
 
         $this->em->persist($archivo);
