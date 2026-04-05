@@ -1,9 +1,16 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X } from 'lucide-react'
+import { X, ExternalLink } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura } from '@/domain/models'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const resolveFileUrl = (url: string | null | undefined) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${API_URL}${url}`
+}
 import DataTable from '@/components/DataTable/DataTable'
 import { StatusBadge, estadoFacturaAdminLabel, estadoFacturaAdminVariant } from '@/components/StatusBadge/StatusBadge'
 import dayjs from 'dayjs'
@@ -108,17 +115,15 @@ export const FacturasAdminPage = () => {
             />
           )}
           {f.archivo_factura_url && (
-            <Button
-              label="Ver factura"
-              icon="document-linear"
-              variant="outline"
-              color="gray"
-              size="sm"
-              onClick={(e: React.MouseEvent) => {
+            <button
+              className={styles.actionBtn}
+              onClick={(e) => {
                 e.stopPropagation()
-                window.open(f.archivo_factura_url, '_blank')
+                window.open(resolveFileUrl(f.archivo_factura_url), '_blank')
               }}
-            />
+            >
+              <ExternalLink size={14} /> Ver factura
+            </button>
           )}
         </div>
       ),
