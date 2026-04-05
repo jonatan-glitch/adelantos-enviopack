@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAppDispatch } from '@/hooks/useAppSelector'
 import { loginThunk } from '@/store/thunks/auth.thunk'
 import { ROUTES } from '@/domain/constants'
@@ -18,6 +19,7 @@ export const LoginPage = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [serverError, setServerError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <div className={styles.container}>
@@ -32,10 +34,13 @@ export const LoginPage = () => {
             await dispatch(loginThunk(values)).unwrap()
             navigate(ROUTES.DASHBOARD)
           } catch (err) {
-            if (err instanceof ErrorResponse) {
-              setServerError(err.message)
+            const code = err instanceof ErrorResponse ? err.code : 0
+            if (code === 401) {
+              setServerError('Email o contraseña incorrectos. Verificá tus datos e intentá de nuevo.')
+            } else if (code === 403) {
+              setServerError('Tu cuenta fue deshabilitada. Contactá al administrador.')
             } else {
-              setServerError('Email o contraseña incorrectos')
+              setServerError('Error de conexión. Intentá de nuevo en unos segundos.')
             }
           } finally {
             setSubmitting(false)
@@ -63,13 +68,23 @@ export const LoginPage = () => {
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
-              <Field
-                id="contrasena"
-                name="contrasena"
-                type="password"
-                className={styles.input}
-                autoComplete="current-password"
-              />
+              <div className={styles.passwordWrapper}>
+                <Field
+                  id="contrasena"
+                  name="contrasena"
+                  type={showPassword ? 'text' : 'password'}
+                  className={styles.input}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className={styles.eyeBtn}
+                  onClick={() => setShowPassword((v) => !v)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               <ErrorMessage name="contrasena" component="p" className={styles.error} />
             </div>
 
