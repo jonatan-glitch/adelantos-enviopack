@@ -16,9 +16,14 @@ export class ErrorResponse extends Error {
       message?: string
     }
     const data = err.response?.data
-    super(data?.message ?? err.message ?? 'Error desconocido')
+    const msg = (typeof data === 'object' && data !== null ? (data as ApiError).message : undefined)
+      ?? err.message
+      ?? 'Error desconocido'
+    super(msg)
+    Object.setPrototypeOf(this, ErrorResponse.prototype)
+    this.name = 'ErrorResponse'
     this.code = err.response?.status ?? 0
-    this.errors = data?.errors
+    this.errors = typeof data === 'object' && data !== null ? (data as ApiError).errors : undefined
   }
 }
 

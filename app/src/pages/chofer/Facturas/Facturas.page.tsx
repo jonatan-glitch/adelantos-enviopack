@@ -248,8 +248,12 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
 
       onSuccess()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
-      console.error(`Error en paso "${step}":`, err)
+      const msg = err instanceof Error
+        ? err.message
+        : (typeof err === 'object' && err !== null && 'message' in err)
+          ? String((err as { message: unknown }).message)
+          : String(err ?? 'Error desconocido')
+      console.error(`Error en paso "${step}":`, err, 'type:', typeof err, 'constructor:', (err as Record<string, unknown>)?.constructor?.name)
       toast.error(`Error al ${step}: ${msg}`)
     } finally {
       setSubmitting(false)

@@ -108,7 +108,7 @@ class FacturaController extends AbstractApiController
         if (!empty($data['proforma_id'])) {
             // Optionally link to proforma
             $proforma = $this->em->find(\App\Entity\Proforma::class, (int)$data['proforma_id']);
-            if ($proforma && $proforma->getChofer() === $chofer) {
+            if ($proforma && $proforma->getChofer()->getId() === $chofer->getId()) {
                 $factura->setProforma($proforma);
             }
         }
