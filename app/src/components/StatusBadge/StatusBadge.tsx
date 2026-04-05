@@ -43,6 +43,27 @@ export const estadoFacturaVariant: Record<EstadoFactura, Variant> = {
   pagada_cobro_normal: 'neutral',
 }
 
+// Admin-facing simplified labels
+export const estadoFacturaAdminLabel: Record<EstadoFactura, string> = {
+  pendiente_cobro: 'Recibida',
+  cobro_normal: 'Recibida',
+  con_adelanto_solicitado: 'En proceso',
+  adelanto_aprobado: 'En proceso',
+  adelanto_pagado: 'Paga',
+  pagada_cobro_normal: 'Paga',
+  adelanto_rechazado: 'Rechazada',
+}
+
+export const estadoFacturaAdminVariant: Record<EstadoFactura, Variant> = {
+  pendiente_cobro: 'info',
+  cobro_normal: 'info',
+  con_adelanto_solicitado: 'warning',
+  adelanto_aprobado: 'warning',
+  adelanto_pagado: 'success',
+  pagada_cobro_normal: 'success',
+  adelanto_rechazado: 'error',
+}
+
 export const estadoSolicitudLabel: Record<EstadoSolicitud, string> = {
   en_revision: 'En revisión',
   aprobada: 'Aprobada',

@@ -99,6 +99,8 @@ export interface Factura {
   estado: EstadoFactura
   archivo_factura_url?: string
   archivo_nota_credito_url?: string
+  comprobante_pago_url?: string | null
+  fecha_pago?: string | null
   opcion_cobro: 'normal' | 'adelanto'
   created_at: string
 }

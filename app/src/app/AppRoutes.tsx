@@ -28,6 +28,7 @@ import { ChoferesPage } from '@/pages/admin/Choferes/Choferes.page'
 import { ChoferDetallePage } from '@/pages/admin/Choferes/ChoferDetalle.page'
 import { ConfiguracionPage } from '@/pages/admin/Configuracion/Configuracion.page'
 import { ReportesPage } from '@/pages/admin/Reportes/Reportes.page'
+import { FacturasAdminPage } from '@/pages/admin/Facturas/Facturas.page'
 
 const NotFound = () => (
   <div style={{
@@ -75,6 +76,14 @@ export const AppRoutes = () => (
           element={
             <PermissionGuard requiredRoles={ADMIN_ROLES}>
               <ProformasPage />
+            </PermissionGuard>
+          }
+        />
+        <Route
+          path={ROUTES.ADMIN_FACTURAS}
+          element={
+            <PermissionGuard requiredRoles={ADMIN_ROLES}>
+              <FacturasAdminPage />
             </PermissionGuard>
           }
         />

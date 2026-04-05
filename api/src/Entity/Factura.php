@@ -60,6 +60,12 @@ class Factura
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $archivo_nota_credito_url = null;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $comprobante_pago_url = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $fecha_pago = null;
+
     #[ORM\Column]
     private bool $eliminado = false;
 
@@ -96,6 +102,10 @@ class Factura
     public function setArchivoFacturaUrl(?string $url): static { $this->archivo_factura_url = $url; return $this; }
     public function getArchivoNotaCreditoUrl(): ?string { return $this->archivo_nota_credito_url; }
     public function setArchivoNotaCreditoUrl(?string $url): static { $this->archivo_nota_credito_url = $url; return $this; }
+    public function getComprobantePagoUrl(): ?string { return $this->comprobante_pago_url; }
+    public function setComprobantePagoUrl(?string $url): static { $this->comprobante_pago_url = $url; return $this; }
+    public function getFechaPago(): ?\DateTimeImmutable { return $this->fecha_pago; }
+    public function setFechaPago(?\DateTimeImmutable $f): static { $this->fecha_pago = $f; return $this; }
     public function isEliminado(): bool { return $this->eliminado; }
     public function setEliminado(bool $eliminado): static { $this->eliminado = $eliminado; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->created_at; }

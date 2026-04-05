@@ -35,6 +35,7 @@ export const ROUTES = {
   // Admin
   ADMIN_SOLICITUDES: '/admin/solicitudes',
   ADMIN_PROFORMAS: '/admin/proformas',
+  ADMIN_FACTURAS: '/admin/facturas',
   ADMIN_CHOFERES: '/admin/choferes',
   ADMIN_CONFIGURACION: '/admin/configuracion',
   ADMIN_REPORTES: '/admin/reportes',
@@ -47,6 +48,7 @@ export const API_ROUTES = {
   PERFIL: '/api/perfil',
 
   FACTURAS: '/api/facturas',
+  ADMIN_FACTURAS: '/api/admin/facturas',
   ADELANTOS: '/api/adelantos',
   PROFORMAS: '/api/proformas',
   CHOFERES: '/api/choferes',

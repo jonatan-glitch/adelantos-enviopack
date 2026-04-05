@@ -19,6 +19,8 @@ class FacturaResponse
     public string $opcion_cobro;
     public ?string $archivo_factura_url;
     public ?string $archivo_nota_credito_url;
+    public ?string $comprobante_pago_url;
+    public ?string $fecha_pago;
     public string $created_at;
 
     public static function fromEntity(Factura $f): self
@@ -37,6 +39,8 @@ class FacturaResponse
         $dto->opcion_cobro           = $f->getOpcionCobro();
         $dto->archivo_factura_url    = $f->getArchivoFacturaUrl();
         $dto->archivo_nota_credito_url = $f->getArchivoNotaCreditoUrl();
+        $dto->comprobante_pago_url   = $f->getComprobantePagoUrl();
+        $dto->fecha_pago             = $f->getFechaPago()?->format('Y-m-d\TH:i:s\Z');
         $dto->created_at             = $f->getCreatedAt()->format('Y-m-d\TH:i:s\Z');
         return $dto;
     }

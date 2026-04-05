@@ -184,6 +184,18 @@ class FacturaController extends AbstractApiController
             if ($urlFact) { $factura->setArchivoFacturaUrl($urlFact); }
             if ($urlNC)   { $factura->setArchivoNotaCreditoUrl($urlNC); }
 
+            // Transition estado based on payment option
+            if ($opcion === 'normal') {
+                $factura->setEstado(Factura::ESTADO_COBRO_NORMAL);
+            }
+            // For 'adelanto', estado stays pendiente_cobro until SolicitarAdelanto
+
+            // Mark linked proforma as facturada
+            $proforma = $factura->getProforma();
+            if ($proforma && $proforma->getEstado() === \App\Entity\Proforma::ESTADO_PENDIENTE) {
+                $proforma->setEstado(\App\Entity\Proforma::ESTADO_FACTURADA);
+            }
+
             $this->em->flush();
         } catch (\RuntimeException $e) {
             return new JsonResponse(['code' => 500, 'message' => 'Error al subir archivos: ' . $e->getMessage()], 500);
