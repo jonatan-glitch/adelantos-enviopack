@@ -204,8 +204,10 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
     if (opcion === 'adelanto' && !fileNC) return
 
     setSubmitting(true)
+    let step = ''
     try {
       // Step 1: Create factura (JSON)
+      step = 'crear factura'
       const res = await api.post('/api/facturas', {
         numero_factura: numeroFactura,
         monto_bruto: Number(montoFactura),
@@ -214,9 +216,13 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
         proforma_id: proforma.id,
       })
       const facturaId = res.data?.data?.id ?? res.data?.id
-      if (!facturaId) throw new Error('No factura ID')
+      if (!facturaId) {
+        console.error('Factura response:', JSON.stringify(res.data))
+        throw new Error('No se obtuvo ID de factura')
+      }
 
       // Step 2: Upload factura file
+      step = 'subir archivo factura'
       const fdFactura = new FormData()
       fdFactura.append('archivo', fileFactura)
       await api.post(`/api/facturas/${facturaId}/archivo`, fdFactura, {
@@ -225,6 +231,7 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
 
       // Step 3: Upload nota de crédito (if adelanto)
       if (opcion === 'adelanto' && fileNC) {
+        step = 'subir nota de crédito'
         const fdNC = new FormData()
         fdNC.append('archivo', fileNC)
         await api.post(`/api/facturas/${facturaId}/nota-credito`, fdNC, {
@@ -233,14 +240,17 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
       }
 
       // Step 4: Confirm payment option + transition estado (JSON)
+      step = 'confirmar opción de cobro'
       await api.put(`/api/facturas/${facturaId}/confirmar`, {
         opcion_cobro: opcion,
         monto_nota_credito: opcion === 'adelanto' ? descuento : null,
       })
 
       onSuccess()
-    } catch {
-      toast.error('Error al cargar la factura. Intentá de nuevo.')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error desconocido'
+      console.error(`Error en paso "${step}":`, err)
+      toast.error(`Error al ${step}: ${msg}`)
     } finally {
       setSubmitting(false)
     }
