@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, CheckCircle, AlertCircle, CreditCard } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, CreditCard, FileText } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
-import type { Factura } from '@/domain/models'
+import type { Factura, Proforma } from '@/domain/models'
 import DataTable from '@/components/DataTable/DataTable'
 import { StatusBadge, estadoFacturaLabel, estadoFacturaVariant } from '@/components/StatusBadge/StatusBadge'
 import dayjs from 'dayjs'
@@ -14,11 +14,21 @@ const formatCurrency = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
 export const FacturasPage = () => {
-  const [uploadModal, setUploadModal] = useState<Factura | null>(null)
+  const [selectedProforma, setSelectedProforma] = useState<Proforma | null>(null)
   const [adelantoModal, setAdelantoModal] = useState<Factura | null>(null)
   const qc = useQueryClient()
 
-  const { data, isLoading } = useQuery({
+  // Fetch chofer's proformas
+  const { data: proformas, isLoading: loadingProformas } = useQuery({
+    queryKey: ['mis-proformas'],
+    queryFn: async () => {
+      const res = await api.get<{ data: { items: Proforma[] } }>('/api/proformas?limit=50&page=1')
+      return res.data.data.items
+    },
+  })
+
+  // Fetch chofer's facturas
+  const { data: facturas, isLoading: loadingFacturas } = useQuery({
     queryKey: ['mis-facturas'],
     queryFn: async () => {
       const res = await api.get<{ data: { items: Factura[] } }>('/api/facturas?limit=50&page=1')
@@ -26,109 +36,127 @@ export const FacturasPage = () => {
     },
   })
 
-  const columns = [
+  const pendientes = proformas?.filter((p) => p.estado === 'pendiente') ?? []
+
+  const proformaColumns = [
+    { key: 'periodo', title: 'Período', render: (p: Proforma) => <strong>{p.periodo}</strong> },
+    { key: 'monto', title: 'Monto', render: (p: Proforma) => formatCurrency(p.monto) },
+    { key: 'tasa', title: 'Tasa', render: (p: Proforma) => `${p.tasa_aplicada}%` },
     {
-      key: 'numero_factura',
-      title: 'N° Factura',
-      render: (f: Factura) => (
-        <span style={{ fontWeight: 600, color: 'var(--color-gray-800)' }}>
-          #{f.numero_factura}
-        </span>
-      ),
+      key: 'vencimiento', title: 'Vencimiento',
+      render: (p: Proforma) => dayjs(p.fecha_vencimiento).format('DD/MM/YYYY'),
     },
     {
-      key: 'monto_bruto',
-      title: 'Monto bruto',
-      render: (f: Factura) => formatCurrency(f.monto_bruto),
-    },
-    {
-      key: 'monto_neto',
-      title: 'Monto neto',
-      render: (f: Factura) => (
-        <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
-          {formatCurrency(f.monto_neto)}
-        </span>
-      ),
-    },
-    {
-      key: 'fecha_emision',
-      title: 'Fecha emisión',
-      render: (f: Factura) => dayjs(f.fecha_emision).format('DD/MM/YYYY'),
-    },
-    {
-      key: 'fecha_cobro_estimada',
-      title: 'Fecha cobro',
-      render: (f: Factura) => dayjs(f.fecha_cobro_estimada).format('DD/MM/YYYY'),
-    },
-    {
-      key: 'estado',
-      title: 'Estado',
-      render: (f: Factura) => (
-        <StatusBadge
-          label={estadoFacturaLabel[f.estado]}
-          variant={estadoFacturaVariant[f.estado]}
+      key: 'accion', title: '',
+      render: (p: Proforma) => (
+        <Button
+          label="Cargar factura"
+          icon="archive-up-arrow-linear"
+          variant="solid"
+          color="blue"
+          size="sm"
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedProforma(p) }}
         />
       ),
     },
+  ]
+
+  const facturaColumns = [
     {
-      key: 'acciones',
-      title: 'Acciones',
+      key: 'numero_factura', title: 'N° Factura',
+      render: (f: Factura) => <span style={{ fontWeight: 600 }}>#{f.numero_factura}</span>,
+    },
+    { key: 'monto_bruto', title: 'Monto bruto', render: (f: Factura) => formatCurrency(f.monto_bruto) },
+    {
+      key: 'monto_neto', title: 'Monto neto',
       render: (f: Factura) => (
-        <div style={{ display: 'flex', gap: 8 }}>
-          {f.estado === 'pendiente_cobro' && !f.archivo_factura_url && (
-            <Button
-              label="Subir factura"
-              icon="archive-up-arrow-linear"
-              variant="outline"
-              color="blue"
-              size="sm"
-              onClick={(e: React.MouseEvent) => { e.stopPropagation(); setUploadModal(f) }}
-            />
-          )}
-          {f.estado === 'pendiente_cobro' && f.archivo_factura_url && (
-            <Button
-              label="Solicitar adelanto"
-              icon="card-linear"
-              variant="solid"
-              color="blue"
-              size="sm"
-              onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAdelantoModal(f) }}
-            />
-          )}
-        </div>
+        <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{formatCurrency(f.monto_neto)}</span>
+      ),
+    },
+    {
+      key: 'opcion_cobro', title: 'Tipo cobro',
+      render: (f: Factura) => f.opcion_cobro === 'adelanto'
+        ? <StatusBadge label="Adelanto 48hs" variant="info" />
+        : <StatusBadge label="Normal 30 días" variant="default" />,
+    },
+    {
+      key: 'estado', title: 'Estado',
+      render: (f: Factura) => <StatusBadge label={estadoFacturaLabel[f.estado]} variant={estadoFacturaVariant[f.estado]} />,
+    },
+    {
+      key: 'acciones', title: '',
+      render: (f: Factura) => (
+        f.estado === 'pendiente_cobro' && f.archivo_factura_url && (
+          <Button
+            label="Solicitar adelanto"
+            icon="card-linear"
+            variant="outline"
+            color="blue"
+            size="sm"
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAdelantoModal(f) }}
+          />
+        )
       ),
     },
   ]
 
   return (
     <div className={styles.page}>
+      {/* Pending proformas */}
+      {pendientes.length > 0 && (
+        <>
+          <div className={styles.pageHeader}>
+            <div>
+              <h1 className={styles.pageTitle}>Proformas pendientes</h1>
+              <p className={styles.pageSubtitle}>
+                Elegí cómo querés cobrar y cargá tu factura
+              </p>
+            </div>
+          </div>
+
+          <DataTable
+            columns={proformaColumns}
+            data={pendientes}
+            keyExtractor={(p) => p.id}
+            loading={loadingProformas}
+            emptyTitle=""
+            emptyMessage=""
+          />
+
+          <div style={{ height: 40 }} />
+        </>
+      )}
+
+      {/* Existing facturas */}
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Mis Facturas</h1>
-          <p className={styles.pageSubtitle}>
-            Todas tus facturas con su estado actual
-          </p>
+          <p className={styles.pageSubtitle}>Todas tus facturas con su estado actual</p>
         </div>
       </div>
 
       <DataTable
-        columns={columns}
-        data={data ?? []}
+        columns={facturaColumns}
+        data={facturas ?? []}
         keyExtractor={(f) => f.id}
-        loading={isLoading}
-        emptyTitle="Sin facturas disponibles"
-        emptyMessage="El equipo de administración aún no ha cargado proformas para vos."
+        loading={loadingFacturas}
+        emptyTitle="Sin facturas"
+        emptyMessage={pendientes.length > 0
+          ? 'Cargá tu primera factura desde las proformas pendientes arriba.'
+          : 'El equipo de administración aún no ha cargado proformas para vos.'
+        }
       />
 
-      {/* Upload Invoice Modal */}
-      {uploadModal && (
+      {/* Upload Invoice from Proforma Modal */}
+      {selectedProforma && (
         <UploadFacturaModal
-          factura={uploadModal}
-          onClose={() => setUploadModal(null)}
+          proforma={selectedProforma}
+          onClose={() => setSelectedProforma(null)}
           onSuccess={() => {
-            setUploadModal(null)
+            setSelectedProforma(null)
+            qc.invalidateQueries({ queryKey: ['mis-proformas'] })
             qc.invalidateQueries({ queryKey: ['mis-facturas'] })
-            toast.success('Factura subida correctamente')
+            toast.success('Factura cargada correctamente')
           }}
         />
       )}
@@ -141,7 +169,7 @@ export const FacturasPage = () => {
           onSuccess={() => {
             setAdelantoModal(null)
             qc.invalidateQueries({ queryKey: ['mis-facturas'] })
-            toast.success('Solicitud enviada correctamente. Te notificaremos sobre su estado.')
+            toast.success('Solicitud enviada. Te notificaremos sobre su estado.')
           }}
         />
       )}
@@ -149,62 +177,89 @@ export const FacturasPage = () => {
   )
 }
 
-// ── Upload Modal ───────────────────────────────────────────────────────────────
+// ── Upload Factura from Proforma ──────────────────────────────────────────────
 
 interface UploadModalProps {
-  factura: Factura
+  proforma: Proforma
   onClose: () => void
   onSuccess: () => void
 }
 
-const UploadFacturaModal = ({ factura, onClose, onSuccess }: UploadModalProps) => {
+const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) => {
   const [opcion, setOpcion] = useState<'normal' | 'adelanto'>('normal')
   const [fileFactura, setFileFactura] = useState<File | null>(null)
   const [fileNC, setFileNC] = useState<File | null>(null)
-  const [montoFactura, setMontoFactura] = useState('')
+  const [numeroFactura, setNumeroFactura] = useState('')
+  const [montoFactura, setMontoFactura] = useState(String(proforma.monto))
   const [montoNC, setMontoNC] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const montoNeto = opcion === 'adelanto' && montoFactura && montoNC
-    ? Number(montoFactura) - Number(montoNC)
-    : null
+  const descuento = opcion === 'adelanto'
+    ? Number(montoFactura) * (proforma.tasa_aplicada / 100)
+    : 0
+  const montoNeto = Number(montoFactura) - descuento
 
   const handleSubmit = async () => {
-    if (!fileFactura) return
+    if (!fileFactura || !numeroFactura) return
     if (opcion === 'adelanto' && !fileNC) return
 
     setSubmitting(true)
     try {
+      // Step 1: Create factura linked to proforma
+      const res = await api.post('/api/facturas', {
+        numero_factura: numeroFactura,
+        monto_bruto: Number(montoFactura),
+        monto_nota_credito: opcion === 'adelanto' ? descuento : null,
+        fecha_emision: dayjs().format('YYYY-MM-DD'),
+        proforma_id: proforma.id,
+      })
+      const facturaId = res.data?.data?.id
+
+      if (!facturaId) throw new Error('No factura ID')
+
+      // Step 2: Upload files
       const form = new FormData()
-      form.append('factura_id', String(factura.id))
+      form.append('factura_id', String(facturaId))
       form.append('opcion_cobro', opcion)
       form.append('archivo_factura', fileFactura)
       form.append('monto_factura', montoFactura)
       if (opcion === 'adelanto' && fileNC) {
         form.append('archivo_nota_credito', fileNC)
-        form.append('monto_nota_credito', montoNC)
+        form.append('monto_nota_credito', String(descuento))
       }
       await api.post('/api/facturas/subir', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
+
       onSuccess()
     } catch {
-      toast.error('Error al subir la factura. Intentá de nuevo.')
+      toast.error('Error al cargar la factura. Intentá de nuevo.')
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <Modal title="Subir factura" onClose={onClose}>
+    <Modal title="Cargar factura" onClose={onClose}>
       <div className={styles.modalBody}>
-        <p className={styles.modalSubtitle}>
-          Proforma #{factura.proforma?.id} — {formatCurrency(factura.monto_bruto)}
-        </p>
+        <div className={styles.resumen}>
+          <div className={styles.resumenRow}>
+            <span>Proforma</span>
+            <strong>{proforma.periodo}</strong>
+          </div>
+          <div className={styles.resumenRow}>
+            <span>Monto</span>
+            <strong>{formatCurrency(proforma.monto)}</strong>
+          </div>
+          <div className={styles.resumenRow}>
+            <span>Vencimiento</span>
+            <strong>{dayjs(proforma.fecha_vencimiento).format('DD/MM/YYYY')}</strong>
+          </div>
+        </div>
 
         {/* Payment option */}
         <div className={styles.opcionGroup}>
-          <p className={styles.fieldLabel}>Opción de cobro</p>
+          <p className={styles.fieldLabel}>¿Cómo querés cobrar?</p>
           <div className={styles.opcionCards}>
             <button
               className={`${styles.opcionCard} ${opcion === 'normal' ? styles.opcionActive : ''}`}
@@ -214,7 +269,7 @@ const UploadFacturaModal = ({ factura, onClose, onSuccess }: UploadModalProps) =
               <CheckCircle size={20} />
               <div>
                 <p className={styles.opcionTitle}>Cobro normal</p>
-                <p className={styles.opcionDesc}>Cobrás el total en {factura.proforma ? '30' : '30'} días</p>
+                <p className={styles.opcionDesc}>Total en 30 días</p>
               </div>
             </button>
             <button
@@ -225,48 +280,51 @@ const UploadFacturaModal = ({ factura, onClose, onSuccess }: UploadModalProps) =
               <CreditCard size={20} />
               <div>
                 <p className={styles.opcionTitle}>Cobro adelantado</p>
-                <p className={styles.opcionDesc}>Cobrás en 48hs con un descuento</p>
+                <p className={styles.opcionDesc}>En 48hs hábiles con {proforma.tasa_aplicada}% desc.</p>
               </div>
             </button>
           </div>
         </div>
 
-        {/* Factura file */}
+        {/* Factura number */}
         <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>
-            Factura (PDF) *
-          </label>
+          <label className={styles.fieldLabel}>Número de factura *</label>
+          <input
+            type="text"
+            className={styles.input}
+            placeholder="Ej: 0001-00001234"
+            value={numeroFactura}
+            onChange={(e) => setNumeroFactura(e.target.value)}
+          />
+        </div>
+
+        {/* Monto */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel}>Monto de la factura *</label>
           <input
             type="number"
             className={styles.input}
-            placeholder="Monto de la factura"
             value={montoFactura}
             onChange={(e) => setMontoFactura(e.target.value)}
           />
+        </div>
+
+        {/* Factura file */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel}>Archivo de factura (PDF/imagen) *</label>
           <input
             type="file"
             accept=".pdf,image/*"
             className={styles.fileInput}
             onChange={(e) => setFileFactura(e.target.files?.[0] ?? null)}
           />
-          {fileFactura && (
-            <p className={styles.fileName}>✓ {fileFactura.name}</p>
-          )}
+          {fileFactura && <p className={styles.fileName}>✓ {fileFactura.name}</p>}
         </div>
 
         {/* NC file — only for adelanto */}
         {opcion === 'adelanto' && (
           <div className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>
-              Nota de Crédito (PDF) *
-            </label>
-            <input
-              type="number"
-              className={styles.input}
-              placeholder="Monto de la nota de crédito"
-              value={montoNC}
-              onChange={(e) => setMontoNC(e.target.value)}
-            />
+            <label className={styles.fieldLabel}>Nota de Crédito (PDF/imagen) *</label>
             <input
               type="file"
               accept=".pdf,image/*"
@@ -274,12 +332,20 @@ const UploadFacturaModal = ({ factura, onClose, onSuccess }: UploadModalProps) =
               onChange={(e) => setFileNC(e.target.files?.[0] ?? null)}
             />
             {fileNC && <p className={styles.fileName}>✓ {fileNC.name}</p>}
+          </div>
+        )}
 
-            {montoNeto !== null && montoNeto > 0 && (
-              <div className={styles.montoNeto}>
-                <p>Monto a recibir: <strong>{formatCurrency(montoNeto)}</strong></p>
-              </div>
-            )}
+        {/* Summary */}
+        {opcion === 'adelanto' && Number(montoFactura) > 0 && (
+          <div className={styles.montoNeto}>
+            <p>Descuento ({proforma.tasa_aplicada}%): <strong>-{formatCurrency(descuento)}</strong></p>
+            <p>Monto a recibir en 48hs: <strong>{formatCurrency(montoNeto)}</strong></p>
+          </div>
+        )}
+
+        {opcion === 'normal' && Number(montoFactura) > 0 && (
+          <div className={styles.montoNeto}>
+            <p>Monto a recibir en 30 días: <strong>{formatCurrency(Number(montoFactura))}</strong></p>
           </div>
         )}
       </div>
@@ -287,11 +353,11 @@ const UploadFacturaModal = ({ factura, onClose, onSuccess }: UploadModalProps) =
       <div className={styles.modalFooter}>
         <Button label="Cancelar" variant="outline" color="gray" onClick={onClose} />
         <Button
-          label={submitting ? 'Enviando...' : 'Enviar'}
+          label={submitting ? 'Enviando...' : 'Enviar factura'}
           variant="solid"
           color="blue"
           loading={submitting}
-          disabled={submitting || !fileFactura || (opcion === 'adelanto' && !fileNC)}
+          disabled={submitting || !fileFactura || !numeroFactura || (opcion === 'adelanto' && !fileNC)}
           onClick={handleSubmit}
         />
       </div>
@@ -299,7 +365,7 @@ const UploadFacturaModal = ({ factura, onClose, onSuccess }: UploadModalProps) =
   )
 }
 
-// ── Solicitar Adelanto Modal ───────────────────────────────────────────────────
+// ── Solicitar Adelanto Modal ──────────────────────────────────────────────────
 
 interface AdelantoModalProps {
   factura: Factura
@@ -367,7 +433,7 @@ const SolicitarAdelantoModal = ({ factura, onClose, onSuccess }: AdelantoModalPr
   )
 }
 
-// ── Generic Modal ──────────────────────────────────────────────────────────────
+// ── Generic Modal ─────────────────────────────────────────────────────────────
 
 const Modal = ({
   title,
