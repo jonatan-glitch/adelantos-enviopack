@@ -37,6 +37,7 @@ security:
         - { path: ^/api/registro-admin, roles: PUBLIC_ACCESS }
         - { path: ^/api/registro, roles: PUBLIC_ACCESS }
         - { path: ^/api/archivos, roles: PUBLIC_ACCESS }
+        - { path: ^/api/maintenance, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin, roles: [ROLE_ENVIOPACK_ADMIN, ROLE_OWNER, ROLE_ADMINISTRADOR, ROLE_SUPERVISOR] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
