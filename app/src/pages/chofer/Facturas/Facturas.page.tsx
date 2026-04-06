@@ -1,9 +1,16 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, CheckCircle, AlertCircle, CreditCard, FileText } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, CreditCard, FileText, Download } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura, Proforma } from '@/domain/models'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const resolveFileUrl = (url: string | null | undefined) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `${API_URL}${url}`
+}
 import DataTable from '@/components/DataTable/DataTable'
 import { StatusBadge, estadoFacturaLabel, estadoFacturaVariant } from '@/components/StatusBadge/StatusBadge'
 import dayjs from 'dayjs'
@@ -86,16 +93,29 @@ export const FacturasPage = () => {
     {
       key: 'acciones', title: '',
       render: (f: Factura) => (
-        f.estado === 'pendiente_cobro' && f.archivo_factura_url && (
-          <Button
-            label="Solicitar adelanto"
-            icon="card-linear"
-            variant="outline"
-            color="blue"
-            size="sm"
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAdelantoModal(f) }}
-          />
-        )
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {f.estado === 'pendiente_cobro' && f.archivo_factura_url && (
+            <Button
+              label="Solicitar adelanto"
+              icon="card-linear"
+              variant="outline"
+              color="blue"
+              size="sm"
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAdelantoModal(f) }}
+            />
+          )}
+          {(f.estado === 'pagada_cobro_normal' || f.estado === 'adelanto_pagado') && f.comprobante_pago_url && (
+            <button
+              className={styles.comprobanteBtnChofer}
+              onClick={(e) => {
+                e.stopPropagation()
+                window.open(resolveFileUrl(f.comprobante_pago_url), '_blank')
+              }}
+            >
+              <Download size={14} /> Ver comprobante
+            </button>
+          )}
+        </div>
       ),
     },
   ]

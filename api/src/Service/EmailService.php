@@ -91,6 +91,39 @@ class EmailService
         return $this->send($toEmail, "Nueva proforma — {$periodo}", $html);
     }
 
+    public function sendNotificacionPago(string $toEmail, string $nombreChofer, string $numeroFactura, float $montoNeto, string $tipoCobro, string $comprobanteUrl): bool
+    {
+        $monto = number_format($montoNeto, 2, ',', '.');
+        $tipoLabel = $tipoCobro === 'adelanto' ? 'Adelanto 48hs' : 'Cobro normal';
+        $link = "{$this->frontendUrl}/facturas";
+        $comprobanteLink = str_starts_with($comprobanteUrl, 'http') ? $comprobanteUrl : "{$this->frontendUrl}{$comprobanteUrl}";
+
+        $html = <<<HTML
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
+          <h2 style="margin-top:0;color:#16a34a">Pago efectuado</h2>
+          <p>Hola {$nombreChofer},</p>
+          <p>Te informamos que se registró el pago de tu factura:</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0">
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#555">N° Factura</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">#{$numeroFactura}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#555">Tipo de cobro</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">{$tipoLabel}</td></tr>
+            <tr><td style="padding:8px;border-bottom:1px solid #eee;color:#555">Monto abonado</td><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;color:#16a34a">\${$monto}</td></tr>
+          </table>
+          <a href="{$comprobanteLink}"
+             style="display:inline-block;margin:16px 0 8px;padding:12px 24px;background:#16a34a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+            Ver comprobante de pago
+          </a>
+          <br/>
+          <a href="{$link}"
+             style="display:inline-block;margin:8px 0;padding:12px 24px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+            Ver mis facturas
+          </a>
+          <p style="font-size:13px;color:#555;margin-top:16px">Si tenés alguna duda, contactá al administrador.</p>
+        </div>
+        HTML;
+
+        return $this->send($toEmail, "Pago efectuado — Factura #{$numeroFactura}", $html);
+    }
+
     public function sendInvitacionUsuario(string $toEmail, string $token, string $rolLabel): bool
     {
         $link = "{$this->frontendUrl}/registro-admin/{$token}";

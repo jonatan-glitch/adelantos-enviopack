@@ -27,6 +27,7 @@ class FacturaController extends AbstractApiController
         private EntityManagerInterface $em,
         private FacturaRepository      $facturaRepo,
         private FileStorageService     $fileStorage,
+        private \App\Service\EmailService $emailService,
     ) {}
 
     #[Route('', name: 'admin_facturas_listar', methods: ['GET'])]
@@ -82,13 +83,29 @@ class FacturaController extends AbstractApiController
         }
 
         $data = json_decode($request->getContent(), true) ?? [];
-        if (!empty($data['comprobante_url'])) {
-            $factura->setComprobantePagoUrl($data['comprobante_url']);
+        $comprobanteUrl = $data['comprobante_url'] ?? null;
+        if (!$comprobanteUrl) {
+            return new JsonResponse([
+                'code'    => 422,
+                'message' => 'Debe adjuntar el comprobante de pago.',
+            ], 422);
         }
 
+        $factura->setComprobantePagoUrl($comprobanteUrl);
         $factura->setEstado(Factura::ESTADO_PAGADA_COBRO_NORMAL);
         $factura->setFechaPago(new \DateTimeImmutable());
         $this->em->flush();
+
+        // Notify chofer via email
+        $chofer = $factura->getChofer();
+        $this->emailService->sendNotificacionPago(
+            $chofer->getUsuario()->getEmail(),
+            $chofer->getNombre() . ' ' . $chofer->getApellido(),
+            $factura->getNumeroFactura(),
+            $factura->getMontoNeto(),
+            'normal',
+            $comprobanteUrl,
+        );
 
         return $this->ok(FacturaResponse::fromEntity($factura));
     }

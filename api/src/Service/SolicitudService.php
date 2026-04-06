@@ -18,6 +18,7 @@ class SolicitudService
         private SolicitudAdelantoRepository    $solicitudRepo,
         private FacturaRepository              $facturaRepo,
         private ConfiguracionSistemaRepository $configRepo,
+        private EmailService                   $emailService,
     ) {}
 
     public function listar(int $page, int $limit, ?string $estado = null, ?int $chofer_id = null): array
@@ -66,16 +67,36 @@ class SolicitudService
         return $s;
     }
 
-    public function registrarPago(SolicitudAdelanto $s, ?string $comprobanteUrl): SolicitudAdelanto
+    public function registrarPago(SolicitudAdelanto $s, string $comprobanteUrl): SolicitudAdelanto
     {
         if ($s->getEstado() !== SolicitudAdelanto::ESTADO_APROBADA) {
             throw new DomainException('Solo se puede registrar pago de solicitudes aprobadas.');
         }
+        if (!$comprobanteUrl) {
+            throw new DomainException('Debe adjuntar el comprobante de pago.');
+        }
+
         $s->setEstado(SolicitudAdelanto::ESTADO_PAGADA);
         $s->setFechaPago(new \DateTimeImmutable());
-        if ($comprobanteUrl) { $s->setComprobantePagoUrl($comprobanteUrl); }
-        $s->getFactura()->setEstado(Factura::ESTADO_ADELANTO_PAGADO);
+        $s->setComprobantePagoUrl($comprobanteUrl);
+
+        $factura = $s->getFactura();
+        $factura->setEstado(Factura::ESTADO_ADELANTO_PAGADO);
+        $factura->setComprobantePagoUrl($comprobanteUrl);
+        $factura->setFechaPago(new \DateTimeImmutable());
         $this->em->flush();
+
+        // Notify chofer via email
+        $chofer = $factura->getChofer();
+        $this->emailService->sendNotificacionPago(
+            $chofer->getUsuario()->getEmail(),
+            $chofer->getNombre() . ' ' . $chofer->getApellido(),
+            $factura->getNumeroFactura(),
+            $s->getMontoNeto(),
+            'adelanto',
+            $comprobanteUrl,
+        );
+
         return $s;
     }
 }

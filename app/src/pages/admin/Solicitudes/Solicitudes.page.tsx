@@ -271,14 +271,22 @@ const RegistrarPagoModal = ({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const form = new FormData()
-      form.append('solicitud_id', String(solicitud.id))
-      if (file) form.append('comprobante', file)
-      await api.put(`/api/admin/solicitudes/${solicitud.id}/pagar`, form, {
+      if (!file) throw new Error('Debe adjuntar el comprobante de pago.')
+
+      // Step 1: Upload comprobante file
+      const fd = new FormData()
+      fd.append('comprobante', file)
+      const uploadRes = await api.post(`/api/admin/solicitudes/${solicitud.id}/comprobante`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
+      const comprobanteUrl = uploadRes.data?.data?.comprobante_url ?? null
+
+      // Step 2: Register payment with comprobante URL
+      await api.put(`/api/admin/solicitudes/${solicitud.id}/registrar-pago`, {
+        comprobante_url: comprobanteUrl,
+      })
     },
-    onSuccess: () => { toast.success('Pago registrado correctamente'); onSuccess() },
+    onSuccess: () => { toast.success('Pago registrado correctamente. El chofer fue notificado por email.'); onSuccess() },
     onError: () => toast.error('Error al registrar el pago'),
   })
 
@@ -303,7 +311,7 @@ const RegistrarPagoModal = ({
             </div>
           </div>
           <div>
-            <label className={styles.fieldLabel}>Comprobante de pago (PDF/imagen)</label>
+            <label className={styles.fieldLabel}>Comprobante de pago (PDF/imagen) *</label>
             <input
               type="file"
               accept=".pdf,image/*"

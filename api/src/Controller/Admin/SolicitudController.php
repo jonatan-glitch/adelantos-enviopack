@@ -6,6 +6,7 @@ use App\Controller\AbstractApiController;
 use App\Exception\DomainException;
 use App\Repository\SolicitudAdelantoRepository;
 use App\Response\SolicitudAdelantoResponse;
+use App\Service\FileStorageService;
 use App\Service\SolicitudService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +18,7 @@ class SolicitudController extends AbstractApiController
     public function __construct(
         private SolicitudService            $solicitudService,
         private SolicitudAdelantoRepository $solicitudRepo,
+        private FileStorageService          $fileStorage,
     ) {}
 
     #[Route('', name: 'admin_solicitudes_listar', methods: ['GET'])]
@@ -55,6 +57,22 @@ class SolicitudController extends AbstractApiController
         return $this->ok(SolicitudAdelantoResponse::fromEntity($s));
     }
 
+    #[Route('/{id}/comprobante', name: 'admin_solicitudes_comprobante', methods: ['POST'])]
+    public function subirComprobante(int $id, Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
+        $s = $this->solicitudRepo->find($id);
+        if (!$s) { throw new DomainException('Solicitud no encontrada.'); }
+
+        $file = $request->files->get('comprobante');
+        if (!$file) {
+            return new JsonResponse(['code' => 400, 'message' => 'No se envió un archivo.'], 400);
+        }
+
+        $url = $this->fileStorage->store($file);
+        return $this->ok(['comprobante_url' => $url]);
+    }
+
     #[Route('/{id}/registrar-pago', name: 'admin_solicitudes_pago', methods: ['PUT'])]
     public function registrarPago(int $id, Request $request): JsonResponse
     {
@@ -62,7 +80,7 @@ class SolicitudController extends AbstractApiController
         $s = $this->solicitudRepo->find($id);
         if (!$s) { throw new DomainException('Solicitud no encontrada.'); }
         $data = json_decode($request->getContent(), true) ?? [];
-        $s = $this->solicitudService->registrarPago($s, $data['comprobante_url'] ?? null);
+        $s = $this->solicitudService->registrarPago($s, $data['comprobante_url'] ?? '');
         return $this->ok(SolicitudAdelantoResponse::fromEntity($s));
     }
 }

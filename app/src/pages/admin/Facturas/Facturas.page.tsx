@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, ExternalLink } from 'lucide-react'
+import { X, ExternalLink, FileCheck } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura } from '@/domain/models'
@@ -125,6 +125,18 @@ export const FacturasAdminPage = () => {
               <ExternalLink size={14} /> Ver factura
             </button>
           )}
+          {(f.estado === 'pagada_cobro_normal' || f.estado === 'adelanto_pagado') && f.comprobante_pago_url && (
+            <button
+              className={styles.actionBtn}
+              style={{ borderColor: '#16a34a', color: '#16a34a' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                window.open(resolveFileUrl(f.comprobante_pago_url), '_blank')
+              }}
+            >
+              <FileCheck size={14} /> Comprobante
+            </button>
+          )}
         </div>
       ),
     },
@@ -203,7 +215,7 @@ const AbonarModal = ({
         comprobante_url: comprobanteUrl,
       })
     },
-    onSuccess: () => { toast.success('Pago registrado correctamente'); onSuccess() },
+    onSuccess: () => { toast.success('Pago registrado correctamente. El chofer fue notificado por email.'); onSuccess() },
     onError: () => toast.error('Error al registrar el pago'),
   })
 
@@ -232,7 +244,7 @@ const AbonarModal = ({
             </div>
           </div>
           <div>
-            <label className={styles.fieldLabel}>Comprobante de pago (PDF/imagen)</label>
+            <label className={styles.fieldLabel}>Comprobante de pago (PDF/imagen) *</label>
             <input
               type="file"
               accept=".pdf,image/*"
@@ -249,7 +261,7 @@ const AbonarModal = ({
             variant="solid"
             color="blue"
             loading={mutation.isPending}
-            disabled={mutation.isPending}
+            disabled={!file || mutation.isPending}
             onClick={() => mutation.mutate()}
           />
         </div>
