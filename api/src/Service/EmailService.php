@@ -91,6 +91,27 @@ class EmailService
         return $this->send($toEmail, "Nueva proforma — {$periodo}", $html);
     }
 
+    public function sendInvitacionUsuario(string $toEmail, string $token, string $rolLabel): bool
+    {
+        $link = "{$this->frontendUrl}/registro-admin/{$token}";
+
+        $html = <<<HTML
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
+          <h2 style="margin-top:0">Te invitamos a Enviopack Adelantos</h2>
+          <p>Fuiste invitado como <strong>{$rolLabel}</strong> en la plataforma de adelanto de facturas de Enviopack.</p>
+          <p>Hacé clic en el botón para completar tu registro y elegir tu contraseña:</p>
+          <a href="{$link}"
+             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+            Completar registro
+          </a>
+          <p style="font-size:13px;color:#555">Este enlace es válido por 48 horas.</p>
+          <p style="font-size:13px;color:#555">Si no esperabas este email, podés ignorarlo.</p>
+        </div>
+        HTML;
+
+        return $this->send($toEmail, 'Completá tu registro en Enviopack Adelantos', $html);
+    }
+
     private function send(string $to, string $subject, string $html): bool
     {
         if (!$this->apiKey) {

@@ -6,6 +6,7 @@ import {
   History,
   ClipboardList,
   Users,
+  UserCog,
   Settings,
   BarChart3,
   LogOut,
@@ -45,16 +46,18 @@ const AdminNav: NavItemDef[] = [
   { to: ROUTES.ADMIN_PROFORMAS, label: 'Proformas', icon: <FileSpreadsheet size={18} /> },
   { to: ROUTES.ADMIN_FACTURAS, label: 'Facturas', icon: <FileText size={18} /> },
   { to: ROUTES.ADMIN_CHOFERES, label: 'Choferes', icon: <Users size={18} /> },
+  { to: ROUTES.ADMIN_USUARIOS, label: 'Usuarios', icon: <UserCog size={18} /> },
   { to: ROUTES.ADMIN_REPORTES, label: 'Reportes', icon: <BarChart3 size={18} /> },
   { to: ROUTES.ADMIN_CONFIGURACION, label: 'Configuración', icon: <Settings size={18} /> },
 ]
 
 export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
-  const { isAdmin, isConductor } = useRoles()
+  const { isAdmin, isSupervisor, isConductor } = useRoles()
   const profile = useAppSelector((s) => s.profile)
   const logout = useLogout()
   const location = useLocation()
-  const showBothNavs = isAdmin && isConductor
+  const showAdminNav = isAdmin || isSupervisor
+  const showBothNavs = showAdminNav && isConductor
 
   const handleNavClick = () => {
     onClose?.()
@@ -72,7 +75,7 @@ export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
 
       {/* Navigation */}
       <nav className={styles.nav}>
-        {isAdmin && (
+        {showAdminNav && (
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Administración</p>
             {AdminNav.map((item) => (
@@ -100,9 +103,9 @@ export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
           </div>
         )}
 
-        {!isAdmin && !isConductor && (
+        {!showAdminNav && !isConductor && (
           <div className={styles.section}>
-            {(isAdmin ? AdminNav : ConductorNav).map((item) => (
+            {(showAdminNav ? AdminNav : ConductorNav).map((item) => (
               <NavItem
                 key={item.to}
                 {...item}

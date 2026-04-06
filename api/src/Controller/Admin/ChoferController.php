@@ -48,6 +48,7 @@ class ChoferController extends AbstractApiController
     #[Route('/importar', name: 'admin_choferes_importar', methods: ['POST'])]
     public function importar(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $data    = json_decode($request->getContent(), true) ?? [];
         $choferes = $data['choferes'] ?? [];
 

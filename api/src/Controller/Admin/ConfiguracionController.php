@@ -28,6 +28,7 @@ class ConfiguracionController extends AbstractApiController
     #[Route('', name: 'admin_configuracion_actualizar', methods: ['PUT'])]
     public function actualizar(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $data   = json_decode($request->getContent(), true) ?? [];
         $config = $this->configRepo->find(1);
         if (!$config) {

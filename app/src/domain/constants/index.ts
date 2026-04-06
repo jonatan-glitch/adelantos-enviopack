@@ -37,9 +37,13 @@ export const ROUTES = {
   ADMIN_PROFORMAS: '/admin/proformas',
   ADMIN_FACTURAS: '/admin/facturas',
   ADMIN_CHOFERES: '/admin/choferes',
+  ADMIN_USUARIOS: '/admin/usuarios',
   ADMIN_CONFIGURACION: '/admin/configuracion',
   ADMIN_REPORTES: '/admin/reportes',
   ADMIN_CHOFER_DETALLE: '/admin/choferes/:id',
+
+  // Public — admin registration
+  REGISTRO_ADMIN: '/registro-admin/:token',
 } as const
 
 export const API_ROUTES = {
@@ -63,6 +67,7 @@ export const EXCLUDED_AUTH_URLS = [
   API_ROUTES.REFRESH,
   '/api/recuperar-contrasena',
   '/api/registro',
+  '/api/registro-admin',
 ]
 
 export const TASA_MINIMA = 3

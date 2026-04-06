@@ -13,6 +13,7 @@ import { PermissionGuard } from '@/components/PermissionGuard/PermissionGuard'
 import { LoginPage } from '@/pages/Login/Login.page'
 import { RecuperarPasswordPage } from '@/pages/RecuperarPassword/RecuperarPassword.page'
 import { RegistroPage } from '@/pages/Registro/Registro.page'
+import { RegistroAdminPage } from '@/pages/RegistroAdmin/RegistroAdmin.page'
 
 // Chofer pages
 import { DashboardPage } from '@/pages/chofer/Dashboard/Dashboard.page'
@@ -29,6 +30,7 @@ import { ChoferDetallePage } from '@/pages/admin/Choferes/ChoferDetalle.page'
 import { ConfiguracionPage } from '@/pages/admin/Configuracion/Configuracion.page'
 import { ReportesPage } from '@/pages/admin/Reportes/Reportes.page'
 import { FacturasAdminPage } from '@/pages/admin/Facturas/Facturas.page'
+import { UsuariosPage } from '@/pages/admin/Usuarios/Usuarios.page'
 
 const NotFound = () => (
   <div style={{
@@ -48,6 +50,7 @@ export const AppRoutes = () => (
     <Route element={<PublicLayout />}>
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
       <Route path={ROUTES.REGISTRO} element={<RegistroPage />} />
+      <Route path={ROUTES.REGISTRO_ADMIN} element={<RegistroAdminPage />} />
       <Route path={ROUTES.RECUPERAR_PASSWORD} element={<RecuperarPasswordPage />} />
     </Route>
 
@@ -74,7 +77,7 @@ export const AppRoutes = () => (
         <Route
           path={ROUTES.ADMIN_PROFORMAS}
           element={
-            <PermissionGuard requiredRoles={ADMIN_ROLES}>
+            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
               <ProformasPage />
             </PermissionGuard>
           }
@@ -82,7 +85,7 @@ export const AppRoutes = () => (
         <Route
           path={ROUTES.ADMIN_FACTURAS}
           element={
-            <PermissionGuard requiredRoles={ADMIN_ROLES}>
+            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
               <FacturasAdminPage />
             </PermissionGuard>
           }
@@ -90,15 +93,23 @@ export const AppRoutes = () => (
         <Route
           path={ROUTES.ADMIN_CHOFERES}
           element={
-            <PermissionGuard requiredRoles={ADMIN_ROLES}>
+            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
               <ChoferesPage />
+            </PermissionGuard>
+          }
+        />
+        <Route
+          path={ROUTES.ADMIN_USUARIOS}
+          element={
+            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
+              <UsuariosPage />
             </PermissionGuard>
           }
         />
         <Route
           path={ROUTES.ADMIN_CHOFER_DETALLE}
           element={
-            <PermissionGuard requiredRoles={ADMIN_ROLES}>
+            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
               <ChoferDetallePage />
             </PermissionGuard>
           }

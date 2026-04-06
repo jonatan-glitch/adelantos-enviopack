@@ -68,6 +68,7 @@ class FacturaController extends AbstractApiController
     #[Route('/{id}/abonar', name: 'admin_facturas_abonar', methods: ['PUT'])]
     public function abonar(int $id, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $factura = $this->facturaRepo->find($id);
         if (!$factura || $factura->isEliminado()) {
             throw new DomainException('Factura no encontrada.');
@@ -95,6 +96,7 @@ class FacturaController extends AbstractApiController
     #[Route('/{id}/comprobante', name: 'admin_facturas_comprobante', methods: ['POST'])]
     public function subirComprobante(int $id, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $factura = $this->facturaRepo->find($id);
         if (!$factura || $factura->isEliminado()) {
             throw new DomainException('Factura no encontrada.');

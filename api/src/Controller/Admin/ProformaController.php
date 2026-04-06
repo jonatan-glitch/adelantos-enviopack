@@ -28,6 +28,7 @@ class ProformaController extends AbstractApiController
     #[Route('', name: 'admin_proformas_crear', methods: ['POST'])]
     public function crear(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $data = json_decode($request->getContent(), true) ?? [];
         $result = $this->proformaService->crear($data);
         $response = ProformaResponse::fromEntity($result['proforma']);
@@ -37,6 +38,7 @@ class ProformaController extends AbstractApiController
     #[Route('/{id}/documento', name: 'admin_proformas_documento', methods: ['POST'])]
     public function subirDocumento(int $id, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $file = $request->files->get('documento');
         if (!$file) {
             return new JsonResponse(['code' => 400, 'message' => 'No se envió un archivo.'], 400);

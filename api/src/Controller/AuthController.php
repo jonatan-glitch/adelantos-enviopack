@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\Entity\PasswordResetToken;
 use App\Repository\InvitacionChoferRepository;
+use App\Repository\InvitacionUsuarioRepository;
 use App\Repository\PasswordResetTokenRepository;
 use App\Repository\UsuarioRepository;
 use App\Service\ChoferService;
 use App\Service\EmailService;
+use App\Service\UsuarioAdminService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -81,6 +83,59 @@ class AuthController extends AbstractApiController
         return $this->created([
             'message' => 'Registro completado. Ya podés iniciar sesión.',
             'chofer_id' => $chofer->getId(),
+        ]);
+    }
+
+    // ── Registro de usuario admin por invitación ──────────────────────────────
+
+    #[Route('/registro-admin/{token}', name: 'api_registro_admin_info', methods: ['GET'])]
+    public function registroAdminInfo(string $token, InvitacionUsuarioRepository $repo): JsonResponse
+    {
+        $invitacion = $repo->findOneBy(['token' => $token]);
+
+        if (!$invitacion || !$invitacion->isVigente()) {
+            return new JsonResponse(['code' => 404, 'message' => 'Invitación no encontrada o expirada.'], 404);
+        }
+
+        return $this->ok([
+            'email'     => $invitacion->getEmail(),
+            'rol'       => $invitacion->getRol(),
+            'expira_en' => $invitacion->getExpiraEn()->format('c'),
+        ]);
+    }
+
+    #[Route('/registro-admin/{token}', name: 'api_registro_admin_completar', methods: ['POST'])]
+    public function registroAdminCompletar(
+        string $token,
+        Request $request,
+        InvitacionUsuarioRepository $repo,
+        UsuarioAdminService $usuarioService,
+    ): JsonResponse {
+        $invitacion = $repo->findOneBy(['token' => $token]);
+
+        if (!$invitacion || !$invitacion->isVigente()) {
+            return new JsonResponse(['code' => 404, 'message' => 'Invitación no encontrada o expirada.'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        $errors = [];
+        if (empty($data['nombre']))     { $errors['nombre']     = 'El nombre es obligatorio.'; }
+        if (empty($data['apellido']))   { $errors['apellido']   = 'El apellido es obligatorio.'; }
+        if (empty($data['contrasena'])) { $errors['contrasena'] = 'La contraseña es obligatoria.'; }
+        if (!empty($data['contrasena']) && strlen($data['contrasena']) < 8) {
+            $errors['contrasena'] = 'La contraseña debe tener al menos 8 caracteres.';
+        }
+
+        if (!empty($errors)) {
+            return new JsonResponse(['code' => 422, 'message' => 'Error de validación.', 'errors' => $errors], 422);
+        }
+
+        $usuario = $usuarioService->completarRegistro($invitacion, $data);
+
+        return $this->created([
+            'message'    => 'Registro completado. Ya podés iniciar sesión.',
+            'usuario_id' => $usuario->getId(),
         ]);
     }
 

@@ -34,6 +34,7 @@ class SolicitudController extends AbstractApiController
     #[Route('/{id}/aprobar', name: 'admin_solicitudes_aprobar', methods: ['PUT'])]
     public function aprobar(int $id): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $s = $this->solicitudRepo->find($id);
         if (!$s) { throw new DomainException('Solicitud no encontrada.'); }
         $usuario = $this->getUsuario();
@@ -44,6 +45,7 @@ class SolicitudController extends AbstractApiController
     #[Route('/{id}/rechazar', name: 'admin_solicitudes_rechazar', methods: ['PUT'])]
     public function rechazar(int $id, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $s = $this->solicitudRepo->find($id);
         if (!$s) { throw new DomainException('Solicitud no encontrada.'); }
         $data   = json_decode($request->getContent(), true) ?? [];
@@ -56,6 +58,7 @@ class SolicitudController extends AbstractApiController
     #[Route('/{id}/registrar-pago', name: 'admin_solicitudes_pago', methods: ['PUT'])]
     public function registrarPago(int $id, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
         $s = $this->solicitudRepo->find($id);
         if (!$s) { throw new DomainException('Solicitud no encontrada.'); }
         $data = json_decode($request->getContent(), true) ?? [];
