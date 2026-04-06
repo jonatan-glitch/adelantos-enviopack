@@ -2,7 +2,6 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   FileText,
-  CreditCard,
   History,
   ClipboardList,
   Users,
@@ -36,7 +35,6 @@ interface SidenavProps {
 const ConductorNav: NavItemDef[] = [
   { to: ROUTES.DASHBOARD, label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
   { to: ROUTES.FACTURAS, label: 'Mis Facturas', icon: <FileText size={18} /> },
-  { to: ROUTES.ADELANTOS, label: 'Adelantos', icon: <CreditCard size={18} /> },
   { to: ROUTES.HISTORIAL, label: 'Historial', icon: <History size={18} /> },
   { to: ROUTES.PERFIL, label: 'Mi Perfil', icon: <UserCircle size={18} /> },
 ]

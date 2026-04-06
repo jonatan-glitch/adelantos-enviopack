@@ -18,7 +18,7 @@ import { RegistroAdminPage } from '@/pages/RegistroAdmin/RegistroAdmin.page'
 // Chofer pages
 import { DashboardPage } from '@/pages/chofer/Dashboard/Dashboard.page'
 import { FacturasPage } from '@/pages/chofer/Facturas/Facturas.page'
-import { AdelantosPage } from '@/pages/chofer/Adelantos/Adelantos.page'
+// Adelantos page removed — info visible in Facturas
 import { HistorialPage } from '@/pages/chofer/Historial/Historial.page'
 import { PerfilPage } from '@/pages/chofer/Perfil/Perfil.page'
 
@@ -61,7 +61,7 @@ export const AppRoutes = () => (
         {/* Chofer routes */}
         <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
         <Route path={ROUTES.FACTURAS} element={<FacturasPage />} />
-        <Route path={ROUTES.ADELANTOS} element={<AdelantosPage />} />
+        {/* Adelantos removed — chofer tracks state from Facturas */}
         <Route path={ROUTES.HISTORIAL} element={<HistorialPage />} />
         <Route path={ROUTES.PERFIL} element={<PerfilPage />} />
 

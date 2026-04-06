@@ -106,11 +106,14 @@ class FacturaController extends AbstractApiController
         $factura->setArchivoNotaCreditoUrl($data['archivo_nota_credito_url'] ?? null);
 
         if (!empty($data['proforma_id'])) {
-            // Optionally link to proforma
             $proforma = $this->em->find(\App\Entity\Proforma::class, (int)$data['proforma_id']);
-            if ($proforma && $proforma->getChofer()->getId() === $chofer->getId()) {
-                $factura->setProforma($proforma);
+            if (!$proforma || $proforma->getChofer()->getId() !== $chofer->getId()) {
+                return new JsonResponse(['code' => 404, 'message' => 'Proforma no encontrada.'], 404);
             }
+            if ($proforma->getEstado() !== \App\Entity\Proforma::ESTADO_PENDIENTE) {
+                return new JsonResponse(['code' => 422, 'message' => 'Esta proforma ya tiene una factura cargada.'], 422);
+            }
+            $factura->setProforma($proforma);
         }
 
         $this->em->persist($factura);
@@ -126,6 +129,10 @@ class FacturaController extends AbstractApiController
     {
         $factura = $this->getFacturaChofer($id);
         if ($factura instanceof JsonResponse) return $factura;
+
+        if ($factura->getEstado() !== Factura::ESTADO_PENDIENTE_COBRO) {
+            return new JsonResponse(['code' => 422, 'message' => 'Esta factura ya fue procesada y no se puede modificar.'], 422);
+        }
 
         $file = $request->files->get('archivo');
         if (!$file) {
@@ -152,6 +159,10 @@ class FacturaController extends AbstractApiController
     {
         $factura = $this->getFacturaChofer($id);
         if ($factura instanceof JsonResponse) return $factura;
+
+        if ($factura->getEstado() !== Factura::ESTADO_PENDIENTE_COBRO) {
+            return new JsonResponse(['code' => 422, 'message' => 'Esta factura ya fue procesada y no se puede modificar.'], 422);
+        }
 
         $file = $request->files->get('archivo');
         if (!$file) {
