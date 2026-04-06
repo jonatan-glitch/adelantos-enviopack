@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, CheckCircle, AlertCircle, CreditCard, FileText, Download } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, CreditCard, Download } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura, Proforma } from '@/domain/models'
@@ -22,7 +22,6 @@ const formatCurrency = (n: number) =>
 
 export const FacturasPage = () => {
   const [selectedProforma, setSelectedProforma] = useState<Proforma | null>(null)
-  const [adelantoModal, setAdelantoModal] = useState<Factura | null>(null)
   const qc = useQueryClient()
 
   // Fetch chofer's proformas
@@ -93,29 +92,17 @@ export const FacturasPage = () => {
     {
       key: 'acciones', title: '',
       render: (f: Factura) => (
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {f.estado === 'pendiente_cobro' && f.archivo_factura_url && (
-            <Button
-              label="Solicitar adelanto"
-              icon="card-linear"
-              variant="outline"
-              color="blue"
-              size="sm"
-              onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAdelantoModal(f) }}
-            />
-          )}
-          {(f.estado === 'pagada_cobro_normal' || f.estado === 'adelanto_pagado') && f.comprobante_pago_url && (
-            <button
-              className={styles.comprobanteBtnChofer}
-              onClick={(e) => {
-                e.stopPropagation()
-                window.open(resolveFileUrl(f.comprobante_pago_url), '_blank')
-              }}
-            >
-              <Download size={14} /> Ver comprobante
-            </button>
-          )}
-        </div>
+        (f.estado === 'pagada_cobro_normal' || f.estado === 'adelanto_pagado') && f.comprobante_pago_url ? (
+          <button
+            className={styles.comprobanteBtnChofer}
+            onClick={(e) => {
+              e.stopPropagation()
+              window.open(resolveFileUrl(f.comprobante_pago_url), '_blank')
+            }}
+          >
+            <Download size={14} /> Ver comprobante
+          </button>
+        ) : null
       ),
     },
   ]
@@ -181,18 +168,6 @@ export const FacturasPage = () => {
         />
       )}
 
-      {/* Request Advance Modal */}
-      {adelantoModal && (
-        <SolicitarAdelantoModal
-          factura={adelantoModal}
-          onClose={() => setAdelantoModal(null)}
-          onSuccess={() => {
-            setAdelantoModal(null)
-            qc.invalidateQueries({ queryKey: ['mis-facturas'] })
-            toast.success('Solicitud enviada. Te notificaremos sobre su estado.')
-          }}
-        />
-      )}
     </div>
   )
 }
@@ -407,74 +382,6 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
           loading={submitting}
           disabled={submitting || !fileFactura || !numeroFactura || (opcion === 'adelanto' && !fileNC)}
           onClick={handleSubmit}
-        />
-      </div>
-    </Modal>
-  )
-}
-
-// ── Solicitar Adelanto Modal ──────────────────────────────────────────────────
-
-interface AdelantoModalProps {
-  factura: Factura
-  onClose: () => void
-  onSuccess: () => void
-}
-
-const SolicitarAdelantoModal = ({ factura, onClose, onSuccess }: AdelantoModalProps) => {
-  const [consented, setConsented] = useState(false)
-  const mutation = useMutation({
-    mutationFn: () => api.post('/api/adelantos', { factura_id: factura.id, consentimiento: true }),
-    onSuccess,
-    onError: () => toast.error('Error al enviar la solicitud'),
-  })
-
-  return (
-    <Modal title="Solicitar adelanto" onClose={onClose}>
-      <div className={styles.modalBody}>
-        <div className={styles.resumen}>
-          <div className={styles.resumenRow}>
-            <span>Monto bruto</span>
-            <strong>{formatCurrency(factura.monto_bruto)}</strong>
-          </div>
-          <div className={styles.resumenRow}>
-            <span>Nota de crédito</span>
-            <strong className={styles.descuento}>- {formatCurrency(factura.monto_nota_credito ?? 0)}</strong>
-          </div>
-          <div className={`${styles.resumenRow} ${styles.resumenTotal}`}>
-            <span>Monto a recibir</span>
-            <strong>{formatCurrency(factura.monto_neto)}</strong>
-          </div>
-          <div className={styles.resumenRow}>
-            <span>Plazo estimado</span>
-            <strong>48 horas hábiles</strong>
-          </div>
-        </div>
-
-        <div className={styles.alertInfo}>
-          <AlertCircle size={16} />
-          <p>Una vez enviada, la solicitud pasará a revisión. Te notificaremos sobre su estado.</p>
-        </div>
-
-        <label className={styles.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={consented}
-            onChange={(e) => setConsented(e.target.checked)}
-          />
-          Acepto los términos de esta operación de adelanto de factura.
-        </label>
-      </div>
-
-      <div className={styles.modalFooter}>
-        <Button label="Cancelar" variant="outline" color="gray" onClick={onClose} />
-        <Button
-          label={mutation.isPending ? 'Enviando...' : 'Confirmar solicitud'}
-          variant="solid"
-          color="blue"
-          loading={mutation.isPending}
-          disabled={!consented || mutation.isPending}
-          onClick={() => mutation.mutate()}
         />
       </div>
     </Modal>
