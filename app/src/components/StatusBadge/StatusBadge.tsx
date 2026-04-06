@@ -31,6 +31,7 @@ export const estadoFacturaLabel: Record<EstadoFactura, string> = {
   adelanto_rechazado: 'Adelanto rechazado',
   cobro_normal: 'Cobro normal',
   pagada_cobro_normal: 'Pagada',
+  rechazada: 'Rechazada',
 }
 
 export const estadoFacturaVariant: Record<EstadoFactura, Variant> = {
@@ -41,6 +42,7 @@ export const estadoFacturaVariant: Record<EstadoFactura, Variant> = {
   adelanto_rechazado: 'error',
   cobro_normal: 'neutral',
   pagada_cobro_normal: 'neutral',
+  rechazada: 'error',
 }
 
 // Admin-facing simplified labels
@@ -52,6 +54,7 @@ export const estadoFacturaAdminLabel: Record<EstadoFactura, string> = {
   adelanto_pagado: 'Paga',
   pagada_cobro_normal: 'Paga',
   adelanto_rechazado: 'Rechazada',
+  rechazada: 'Rechazada',
 }
 
 export const estadoFacturaAdminVariant: Record<EstadoFactura, Variant> = {
@@ -62,6 +65,7 @@ export const estadoFacturaAdminVariant: Record<EstadoFactura, Variant> = {
   adelanto_pagado: 'success',
   pagada_cobro_normal: 'success',
   adelanto_rechazado: 'error',
+  rechazada: 'error',
 }
 
 export const estadoSolicitudLabel: Record<EstadoSolicitud, string> = {

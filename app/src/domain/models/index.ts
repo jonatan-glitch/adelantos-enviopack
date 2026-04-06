@@ -85,6 +85,7 @@ export type EstadoFactura =
   | 'adelanto_rechazado'
   | 'cobro_normal'
   | 'pagada_cobro_normal'
+  | 'rechazada'
 
 export interface Factura {
   id: number
@@ -101,6 +102,7 @@ export interface Factura {
   archivo_nota_credito_url?: string
   comprobante_pago_url?: string | null
   fecha_pago?: string | null
+  motivo_rechazo?: string | null
   opcion_cobro: 'normal' | 'adelanto'
   created_at: string
 }

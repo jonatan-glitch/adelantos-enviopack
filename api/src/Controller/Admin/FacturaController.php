@@ -20,7 +20,7 @@ class FacturaController extends AbstractApiController
         'recibidas'  => [Factura::ESTADO_COBRO_NORMAL, Factura::ESTADO_PENDIENTE_COBRO],
         'en_proceso' => [Factura::ESTADO_CON_ADELANTO_SOLICITADO, Factura::ESTADO_ADELANTO_APROBADO],
         'pagas'      => [Factura::ESTADO_PAGADA_COBRO_NORMAL, Factura::ESTADO_ADELANTO_PAGADO],
-        'rechazadas' => [Factura::ESTADO_ADELANTO_RECHAZADO],
+        'rechazadas' => [Factura::ESTADO_ADELANTO_RECHAZADO, Factura::ESTADO_RECHAZADA],
     ];
 
     public function __construct(
@@ -106,6 +106,52 @@ class FacturaController extends AbstractApiController
             $factura->getMontoNeto(),
             'normal',
             $comprobanteUrl,
+        );
+
+        return $this->ok(FacturaResponse::fromEntity($factura));
+    }
+
+    #[Route('/{id}/rechazar', name: 'admin_facturas_rechazar', methods: ['PUT'])]
+    public function rechazar(int $id, Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
+        $factura = $this->facturaRepo->find($id);
+        if (!$factura || $factura->isEliminado()) {
+            throw new DomainException('Factura no encontrada.');
+        }
+
+        $estadosRechazables = [
+            Factura::ESTADO_PENDIENTE_COBRO,
+            Factura::ESTADO_COBRO_NORMAL,
+        ];
+        if (!in_array($factura->getEstado(), $estadosRechazables, true)) {
+            return new JsonResponse([
+                'code'    => 422,
+                'message' => 'Solo se pueden rechazar facturas pendientes de cobro.',
+            ], 422);
+        }
+
+        $data   = json_decode($request->getContent(), true) ?? [];
+        $motivo = trim($data['motivo'] ?? '');
+        if (!$motivo) {
+            return new JsonResponse([
+                'code'    => 422,
+                'message' => 'El motivo de rechazo es obligatorio.',
+                'errors'  => ['motivo' => 'Requerido'],
+            ], 422);
+        }
+
+        $factura->setEstado(Factura::ESTADO_RECHAZADA);
+        $factura->setMotivoRechazo($motivo);
+        $this->em->flush();
+
+        // Notify chofer via email
+        $chofer = $factura->getChofer();
+        $this->emailService->sendNotificacionRechazoFactura(
+            $chofer->getUsuario()->getEmail(),
+            $chofer->getNombre() . ' ' . $chofer->getApellido(),
+            $factura->getNumeroFactura(),
+            $motivo,
         );
 
         return $this->ok(FacturaResponse::fromEntity($factura));

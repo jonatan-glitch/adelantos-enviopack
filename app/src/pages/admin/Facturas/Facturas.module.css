@@ -169,6 +169,32 @@
   margin-top: 4px;
 }
 
+.textarea {
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-base);
+  outline: none;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.textarea:focus { border-color: var(--color-accent); }
+
+.alertWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: #9a3412;
+}
+
 @media (max-width: 768px) {
   .page { padding: 16px; }
   .modalHeader { padding: 16px; }

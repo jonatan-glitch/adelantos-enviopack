@@ -16,6 +16,7 @@ class Factura
     public const ESTADO_ADELANTO_RECHAZADO         = 'adelanto_rechazado';
     public const ESTADO_COBRO_NORMAL               = 'cobro_normal';
     public const ESTADO_PAGADA_COBRO_NORMAL        = 'pagada_cobro_normal';
+    public const ESTADO_RECHAZADA                  = 'rechazada';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -66,6 +67,9 @@ class Factura
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $fecha_pago = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $motivo_rechazo = null;
+
     #[ORM\Column]
     private bool $eliminado = false;
 
@@ -106,6 +110,8 @@ class Factura
     public function setComprobantePagoUrl(?string $url): static { $this->comprobante_pago_url = $url; return $this; }
     public function getFechaPago(): ?\DateTimeImmutable { return $this->fecha_pago; }
     public function setFechaPago(?\DateTimeImmutable $f): static { $this->fecha_pago = $f; return $this; }
+    public function getMotivoRechazo(): ?string { return $this->motivo_rechazo; }
+    public function setMotivoRechazo(?string $motivo): static { $this->motivo_rechazo = $motivo; return $this; }
     public function isEliminado(): bool { return $this->eliminado; }
     public function setEliminado(bool $eliminado): static { $this->eliminado = $eliminado; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->created_at; }

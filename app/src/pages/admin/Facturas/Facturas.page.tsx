@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, ExternalLink, FileCheck } from 'lucide-react'
+import { X, ExternalLink, FileCheck, AlertCircle } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura } from '@/domain/models'
@@ -33,6 +33,7 @@ const grupoLabels: Record<GrupoFilter, string> = {
 export const FacturasAdminPage = () => {
   const [grupoFilter, setGrupoFilter] = useState<GrupoFilter>('recibidas')
   const [abonarModal, setAbonarModal] = useState<Factura | null>(null)
+  const [rechazarModal, setRechazarModal] = useState<Factura | null>(null)
   const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -105,14 +106,29 @@ export const FacturasAdminPage = () => {
       render: (f: Factura) => (
         <div style={{ display: 'flex', gap: 6 }}>
           {['pendiente_cobro', 'cobro_normal'].includes(f.estado) && (
-            <Button
-              label="Abonar"
-              icon="archive-up-arrow-linear"
-              variant="solid"
-              color="blue"
-              size="sm"
-              onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAbonarModal(f) }}
-            />
+            <>
+              <Button
+                label="Abonar"
+                icon="archive-up-arrow-linear"
+                variant="solid"
+                color="blue"
+                size="sm"
+                onClick={(e: React.MouseEvent) => { e.stopPropagation(); setAbonarModal(f) }}
+              />
+              <Button
+                label="Rechazar"
+                icon="cross-linear"
+                variant="solid"
+                color="red"
+                size="sm"
+                onClick={(e: React.MouseEvent) => { e.stopPropagation(); setRechazarModal(f) }}
+              />
+            </>
+          )}
+          {f.estado === 'rechazada' && f.motivo_rechazo && (
+            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-error)', maxWidth: 180, display: 'inline-block' }}>
+              {f.motivo_rechazo}
+            </span>
           )}
           {f.archivo_factura_url && (
             <button
@@ -179,6 +195,17 @@ export const FacturasAdminPage = () => {
           onClose={() => setAbonarModal(null)}
           onSuccess={() => {
             setAbonarModal(null)
+            qc.invalidateQueries({ queryKey: ['admin-facturas'] })
+          }}
+        />
+      )}
+
+      {rechazarModal && (
+        <RechazarFacturaModal
+          factura={rechazarModal}
+          onClose={() => setRechazarModal(null)}
+          onSuccess={() => {
+            setRechazarModal(null)
             qc.invalidateQueries({ queryKey: ['admin-facturas'] })
           }}
         />
@@ -262,6 +289,74 @@ const AbonarModal = ({
             color="blue"
             loading={mutation.isPending}
             disabled={!file || mutation.isPending}
+            onClick={() => mutation.mutate()}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Rechazar Factura Modal ───────────────────────────────────────────────────
+
+const RechazarFacturaModal = ({
+  factura,
+  onClose,
+  onSuccess,
+}: { factura: Factura; onClose: () => void; onSuccess: () => void }) => {
+  const [motivo, setMotivo] = useState('')
+
+  const mutation = useMutation({
+    mutationFn: () => api.put(`/api/admin/facturas/${factura.id}/rechazar`, { motivo }),
+    onSuccess: () => { toast.success('Factura rechazada. El chofer fue notificado por email.'); onSuccess() },
+    onError: () => toast.error('Error al rechazar la factura'),
+  })
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3 className={styles.modalTitle}>Rechazar factura</h3>
+          <button className={styles.closeBtn} onClick={onClose}><X size={18} /></button>
+        </div>
+        <div className={styles.modalBody}>
+          <div className={styles.resumen}>
+            <div className={styles.resumenRow}>
+              <span>Chofer</span>
+              <strong>{factura.chofer.nombre} {factura.chofer.apellido}</strong>
+            </div>
+            <div className={styles.resumenRow}>
+              <span>N° Factura</span>
+              <strong>#{factura.numero_factura}</strong>
+            </div>
+            <div className={styles.resumenRow}>
+              <span>Monto</span>
+              <strong>{formatCurrency(factura.monto_neto)}</strong>
+            </div>
+          </div>
+          <div>
+            <label className={styles.fieldLabel}>Motivo del rechazo *</label>
+            <textarea
+              className={styles.textarea}
+              placeholder="Indicá el motivo del rechazo..."
+              rows={4}
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+            />
+          </div>
+          <div className={styles.alertWarning}>
+            <AlertCircle size={16} />
+            <p>El motivo será visible para el chofer y se le enviará por email.</p>
+          </div>
+        </div>
+        <div className={styles.modalFooter}>
+          <Button label="Cancelar" variant="outline" color="gray" onClick={onClose} />
+          <Button
+            label={mutation.isPending ? 'Rechazando...' : 'Confirmar rechazo'}
+            variant="solid"
+            color="red"
+            loading={mutation.isPending}
+            disabled={!motivo.trim() || mutation.isPending}
             onClick={() => mutation.mutate()}
           />
         </div>

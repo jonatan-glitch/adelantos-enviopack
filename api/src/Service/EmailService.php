@@ -124,6 +124,32 @@ class EmailService
         return $this->send($toEmail, "Pago efectuado — Factura #{$numeroFactura}", $html);
     }
 
+    public function sendNotificacionRechazoFactura(string $toEmail, string $nombreChofer, string $numeroFactura, string $motivo): bool
+    {
+        $link = "{$this->frontendUrl}/facturas";
+        $motivoHtml = nl2br(htmlspecialchars($motivo));
+
+        $html = <<<HTML
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
+          <h2 style="margin-top:0;color:#dc2626">Factura rechazada</h2>
+          <p>Hola {$nombreChofer},</p>
+          <p>Te informamos que tu factura <strong>#{$numeroFactura}</strong> fue rechazada por el equipo de administración.</p>
+          <div style="margin:16px 0;padding:14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px">
+            <p style="margin:0 0 6px;font-size:13px;color:#991b1b;font-weight:600">Motivo del rechazo:</p>
+            <p style="margin:0;font-size:14px;color:#7f1d1d">{$motivoHtml}</p>
+          </div>
+          <p>Podés corregir lo necesario y volver a cargar la factura desde la plataforma.</p>
+          <a href="{$link}"
+             style="display:inline-block;margin:16px 0;padding:12px 24px;background:#2563EB;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">
+            Ir a Mis Facturas
+          </a>
+          <p style="font-size:13px;color:#555;margin-top:16px">Si tenés alguna duda, contactá al administrador.</p>
+        </div>
+        HTML;
+
+        return $this->send($toEmail, "Factura rechazada — #{$numeroFactura}", $html);
+    }
+
     public function sendInvitacionUsuario(string $toEmail, string $token, string $rolLabel): bool
     {
         $link = "{$this->frontendUrl}/registro-admin/{$token}";
