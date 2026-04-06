@@ -75,10 +75,11 @@ class FacturaController extends AbstractApiController
             throw new DomainException('Factura no encontrada.');
         }
 
-        if ($factura->getEstado() !== Factura::ESTADO_COBRO_NORMAL) {
+        $estadosAbonables = [Factura::ESTADO_COBRO_NORMAL, Factura::ESTADO_PENDIENTE_COBRO];
+        if (!in_array($factura->getEstado(), $estadosAbonables, true)) {
             return new JsonResponse([
                 'code'    => 422,
-                'message' => 'Solo se pueden abonar facturas con cobro normal pendiente.',
+                'message' => 'Solo se pueden abonar facturas pendientes de cobro.',
             ], 422);
         }
 

@@ -104,7 +104,7 @@ export const FacturasAdminPage = () => {
       title: 'Acciones',
       render: (f: Factura) => (
         <div style={{ display: 'flex', gap: 6 }}>
-          {f.estado === 'cobro_normal' && (
+          {['pendiente_cobro', 'cobro_normal'].includes(f.estado) && (
             <Button
               label="Abonar"
               icon="archive-up-arrow-linear"
