@@ -27,8 +27,16 @@ class UsuarioAdminService
             throw new DomainException('El rol seleccionado no es válido.');
         }
 
-        if ($this->usuarioRepo->findOneBy(['email' => $email, 'eliminado' => false])) {
-            throw new DomainException('Ya existe un usuario registrado con ese email.');
+        $existente = $this->usuarioRepo->findOneBy(['email' => $email, 'eliminado' => false]);
+        if ($existente) {
+            // Si es un conductor, lo eliminamos (soft-delete) para permitir re-invitación con otro rol
+            if (in_array('ROLE_CONDUCTOR', $existente->getRoles(), true)
+                && !array_intersect($existente->getRoles(), RolConstant::ROLES_ADMIN_PANEL)) {
+                $existente->setEliminado(true);
+                $this->em->flush();
+            } else {
+                throw new DomainException('Ya existe un usuario registrado con ese email.');
+            }
         }
 
         // Invalidar invitaciones previas no usadas
