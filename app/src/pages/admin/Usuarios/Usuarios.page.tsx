@@ -7,7 +7,7 @@ import { Button } from '@enviopack/epic-ui'
 import { toast } from 'react-toastify'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import { useRoles } from '@/hooks/useRoles'
-import { ROLES } from '@/domain/constants'
+import { ROLES, ADMIN_ROLES } from '@/domain/constants'
 import DataTable from '@/components/DataTable/DataTable'
 import { StatusBadge } from '@/components/StatusBadge/StatusBadge'
 import styles from './Usuarios.module.css'
@@ -70,8 +70,9 @@ const inviteSchema = Yup.object({
 export const UsuariosPage = () => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
-  const { hasRole } = useRoles()
+  const { hasRole, hasAnyRole } = useRoles()
   const isSuperAdmin = hasRole(ROLES.ENVIOPACK_ADMIN)
+  const isAdmin = hasAnyRole(ADMIN_ROLES)
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-usuarios'],
@@ -156,7 +157,7 @@ export const UsuariosPage = () => {
           <p className={styles.pageSubtitle}>Gestión del equipo con acceso a la plataforma</p>
         </div>
 
-        {isSuperAdmin && (
+        {isAdmin && (
           <div className={styles.headerActions}>
             <Button
               label="Invitar usuario"

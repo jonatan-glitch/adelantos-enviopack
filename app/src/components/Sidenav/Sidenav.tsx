@@ -56,12 +56,7 @@ export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
   const location = useLocation()
   const showAdminNav = isAdmin || isSupervisor
   const showBothNavs = showAdminNav && isConductor
-  const isSuperAdmin = hasRole(ROLES.ENVIOPACK_ADMIN)
-
-  const filteredAdminNav = AdminNav.filter((item) => {
-    if (item.to === ROUTES.ADMIN_USUARIOS) return isSuperAdmin
-    return true
-  })
+  const filteredAdminNav = AdminNav.filter(() => true)
 
   const handleNavClick = () => {
     onClose?.()

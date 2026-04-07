@@ -33,8 +33,7 @@ class UsuarioController extends AbstractApiController
     #[Route('/invitar', name: 'admin_usuarios_invitar', methods: ['POST'])]
     public function invitar(Request $request): JsonResponse
     {
-        // Only super admin can invite users
-        $this->denyAccessUnlessGranted('ROLE_ENVIOPACK_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_ADMINISTRADOR');
 
         $data  = json_decode($request->getContent(), true) ?? [];
         $email = strtolower(trim($data['email'] ?? ''));
