@@ -101,7 +101,7 @@ export const AppRoutes = () => (
         <Route
           path={ROUTES.ADMIN_USUARIOS}
           element={
-            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
+            <PermissionGuard requiredRoles={['ROLE_ENVIOPACK_ADMIN']}>
               <UsuariosPage />
             </PermissionGuard>
           }

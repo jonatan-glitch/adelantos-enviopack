@@ -14,7 +14,7 @@ import {
   X,
   UserCircle,
 } from 'lucide-react'
-import { ROUTES } from '@/domain/constants'
+import { ROUTES, ROLES } from '@/domain/constants'
 import { useRoles } from '@/hooks/useRoles'
 import { useLogout } from '@/hooks/useLogout'
 import { useAppSelector } from '@/hooks/useAppSelector'
@@ -50,12 +50,18 @@ const AdminNav: NavItemDef[] = [
 ]
 
 export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
-  const { isAdmin, isSupervisor, isConductor } = useRoles()
+  const { isAdmin, isSupervisor, isConductor, hasRole } = useRoles()
   const profile = useAppSelector((s) => s.profile)
   const logout = useLogout()
   const location = useLocation()
   const showAdminNav = isAdmin || isSupervisor
   const showBothNavs = showAdminNav && isConductor
+  const isSuperAdmin = hasRole(ROLES.ENVIOPACK_ADMIN)
+
+  const filteredAdminNav = AdminNav.filter((item) => {
+    if (item.to === ROUTES.ADMIN_USUARIOS) return isSuperAdmin
+    return true
+  })
 
   const handleNavClick = () => {
     onClose?.()
@@ -76,7 +82,7 @@ export const Sidenav = ({ isOpen = false, onClose }: SidenavProps) => {
         {showAdminNav && (
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Administración</p>
-            {AdminNav.map((item) => (
+            {filteredAdminNav.map((item) => (
               <NavItem
                 key={item.to}
                 {...item}
