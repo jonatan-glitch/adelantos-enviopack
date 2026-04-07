@@ -79,6 +79,33 @@ class UsuarioAdminService
         return $usuario;
     }
 
+    public function cambiarRol(int $id, string $nuevoRol): Usuario
+    {
+        if (!array_key_exists($nuevoRol, RolConstant::ROLES_INVITABLES)) {
+            throw new DomainException('El rol seleccionado no es válido.');
+        }
+
+        $usuario = $this->usuarioRepo->find($id);
+        if (!$usuario || $usuario->isEliminado()) {
+            throw new DomainException('Usuario no encontrado.');
+        }
+
+        // No permitir cambiar el rol del super admin
+        if (in_array(RolConstant::ROLE_ENVIOPACK_ADMIN, $usuario->getRoles(), true)) {
+            throw new DomainException('No se puede modificar el rol del Super Admin.');
+        }
+
+        // No permitir cambiar a un conductor
+        if (in_array(RolConstant::ROLE_CONDUCTOR, $usuario->getRoles(), true)) {
+            throw new DomainException('No se puede cambiar el rol de un conductor desde aquí.');
+        }
+
+        $usuario->setRoles([$nuevoRol]);
+        $this->em->flush();
+
+        return $usuario;
+    }
+
     public function listarUsuariosAdmin(): array
     {
         $qb = $this->em->createQueryBuilder()

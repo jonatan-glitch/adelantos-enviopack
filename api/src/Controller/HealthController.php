@@ -13,7 +13,7 @@ class HealthController extends AbstractController
     {
         return new JsonResponse([
             'status'    => 'ok',
-            'version'   => 'v25',
+            'version'   => 'v26',
             'timestamp' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
         ]);
     }

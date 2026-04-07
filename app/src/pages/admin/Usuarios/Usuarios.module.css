@@ -169,6 +169,47 @@ select.input {
   margin-top: 1px;
 }
 
+/* ── Edit role button ──────────────────────────────────────── */
+.editRoleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-accent);
+  background: none;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-base);
+}
+.editRoleBtn:hover {
+  background: var(--color-accent);
+  color: white;
+}
+
+/* ── User info in modal ──────────────────────────────────── */
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
+}
+.userInfoName {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+.userInfoEmail {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: 2px;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
   .page { padding: 16px; }

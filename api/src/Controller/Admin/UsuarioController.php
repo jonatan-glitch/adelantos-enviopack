@@ -70,4 +70,22 @@ class UsuarioController extends AbstractApiController
         }
         return $this->ok(['roles' => $roles]);
     }
+
+    #[Route('/{id}/cambiar-rol', name: 'admin_usuarios_cambiar_rol', methods: ['PUT'])]
+    public function cambiarRol(int $id, Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ENVIOPACK_ADMIN');
+
+        $data = json_decode($request->getContent(), true) ?? [];
+        $rol  = $data['rol'] ?? '';
+
+        if (!array_key_exists($rol, RolConstant::ROLES_INVITABLES)) {
+            return new JsonResponse(['code' => 422, 'message' => 'Seleccioná un rol válido.'], 422);
+        }
+
+        $this->usuarioService->cambiarRol($id, $rol);
+
+        $rolLabel = RolConstant::ROLES_INVITABLES[$rol] ?? $rol;
+        return $this->ok(['message' => "Rol actualizado a {$rolLabel}."]);
+    }
 }
