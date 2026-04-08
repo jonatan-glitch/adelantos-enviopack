@@ -34,7 +34,25 @@ export const FacturasAdminPage = () => {
   const [grupoFilter, setGrupoFilter] = useState<GrupoFilter>('recibidas')
   const [abonarModal, setAbonarModal] = useState<Factura | null>(null)
   const [rechazarModal, setRechazarModal] = useState<Factura | null>(null)
+  const [pagoAdelantoModal, setPagoAdelantoModal] = useState<Factura | null>(null)
   const qc = useQueryClient()
+
+  const aprobarMutation = useMutation({
+    mutationFn: async (facturaId: number) => {
+      // Get solicitud for this factura via solicitudes endpoint
+      const res = await api.get<{ data: { items: { id: number; factura: { id: number } }[] } }>(
+        '/api/admin/solicitudes?estado=en_revision&page=1&limit=200'
+      )
+      const sol = res.data.data.items.find((s) => s.factura.id === facturaId)
+      if (!sol) throw new Error('Solicitud no encontrada')
+      await api.put(`/api/admin/solicitudes/${sol.id}/aprobar`)
+    },
+    onSuccess: () => {
+      toast.success('Adelanto aprobado')
+      qc.invalidateQueries({ queryKey: ['admin-facturas'] })
+    },
+    onError: () => toast.error('Error al aprobar'),
+  })
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-facturas', grupoFilter],
@@ -125,6 +143,37 @@ export const FacturasAdminPage = () => {
               />
             </>
           )}
+          {f.estado === 'con_adelanto_solicitado' && (
+            <>
+              <Button
+                label="Aprobar"
+                icon="check-linear"
+                variant="solid"
+                color="green"
+                size="sm"
+                loading={aprobarMutation.isPending}
+                onClick={(e: React.MouseEvent) => { e.stopPropagation(); aprobarMutation.mutate(f.id) }}
+              />
+              <Button
+                label="Rechazar"
+                icon="cross-linear"
+                variant="solid"
+                color="red"
+                size="sm"
+                onClick={(e: React.MouseEvent) => { e.stopPropagation(); setRechazarModal(f) }}
+              />
+            </>
+          )}
+          {f.estado === 'adelanto_aprobado' && (
+            <Button
+              label="Registrar pago"
+              icon="archive-up-arrow-linear"
+              variant="solid"
+              color="blue"
+              size="sm"
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); setPagoAdelantoModal(f) }}
+            />
+          )}
           {f.estado === 'rechazada' && f.motivo_rechazo && (
             <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-error)', maxWidth: 180, display: 'inline-block' }}>
               {f.motivo_rechazo}
@@ -206,6 +255,17 @@ export const FacturasAdminPage = () => {
           onClose={() => setRechazarModal(null)}
           onSuccess={() => {
             setRechazarModal(null)
+            qc.invalidateQueries({ queryKey: ['admin-facturas'] })
+          }}
+        />
+      )}
+
+      {pagoAdelantoModal && (
+        <PagoAdelantoModal
+          factura={pagoAdelantoModal}
+          onClose={() => setPagoAdelantoModal(null)}
+          onSuccess={() => {
+            setPagoAdelantoModal(null)
             qc.invalidateQueries({ queryKey: ['admin-facturas'] })
           }}
         />
@@ -357,6 +417,94 @@ const RechazarFacturaModal = ({
             color="red"
             loading={mutation.isPending}
             disabled={!motivo.trim() || mutation.isPending}
+            onClick={() => mutation.mutate()}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Pago Adelanto Modal ─────────────────────────────────────────────────────
+
+const PagoAdelantoModal = ({
+  factura,
+  onClose,
+  onSuccess,
+}: { factura: Factura; onClose: () => void; onSuccess: () => void }) => {
+  const [file, setFile] = useState<File | null>(null)
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!file) throw new Error('Debe adjuntar el comprobante de pago.')
+
+      // Find the solicitud for this factura
+      const solRes = await api.get<{ data: { items: { id: number; factura: { id: number } }[] } }>(
+        '/api/admin/solicitudes?estado=aprobada&page=1&limit=200'
+      )
+      const sol = solRes.data.data.items.find((s) => s.factura.id === factura.id)
+      if (!sol) throw new Error('Solicitud no encontrada')
+
+      // Upload comprobante
+      const fd = new FormData()
+      fd.append('comprobante', file)
+      const uploadRes = await api.post(`/api/admin/solicitudes/${sol.id}/comprobante`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      const comprobanteUrl = uploadRes.data?.data?.comprobante_url ?? null
+
+      // Register payment
+      await api.put(`/api/admin/solicitudes/${sol.id}/registrar-pago`, {
+        comprobante_url: comprobanteUrl,
+      })
+    },
+    onSuccess: () => { toast.success('Pago registrado. El chofer fue notificado por email.'); onSuccess() },
+    onError: () => toast.error('Error al registrar el pago'),
+  })
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3 className={styles.modalTitle}>Registrar pago de adelanto</h3>
+          <button className={styles.closeBtn} onClick={onClose}><X size={18} /></button>
+        </div>
+        <div className={styles.modalBody}>
+          <div className={styles.resumen}>
+            <div className={styles.resumenRow}>
+              <span>Chofer</span>
+              <strong>{factura.chofer.nombre} {factura.chofer.apellido}</strong>
+            </div>
+            <div className={styles.resumenRow}>
+              <span>N° Factura</span>
+              <strong>#{factura.numero_factura}</strong>
+            </div>
+            <div className={styles.resumenRow}>
+              <span>Monto a pagar</span>
+              <strong style={{ color: 'var(--color-accent)', fontSize: 'var(--font-size-lg)' }}>
+                {formatCurrency(factura.monto_neto)}
+              </strong>
+            </div>
+          </div>
+          <div>
+            <label className={styles.fieldLabel}>Comprobante de pago (PDF/imagen) *</label>
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              className={styles.fileInput}
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+            {file && <p className={styles.fileName}>{file.name}</p>}
+          </div>
+        </div>
+        <div className={styles.modalFooter}>
+          <Button label="Cancelar" variant="outline" color="gray" onClick={onClose} />
+          <Button
+            label={mutation.isPending ? 'Registrando...' : 'Registrar pago'}
+            variant="solid"
+            color="blue"
+            loading={mutation.isPending}
+            disabled={!file || mutation.isPending}
             onClick={() => mutation.mutate()}
           />
         </div>

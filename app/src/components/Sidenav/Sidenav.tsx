@@ -40,7 +40,6 @@ const ConductorNav: NavItemDef[] = [
 ]
 
 const AdminNav: NavItemDef[] = [
-  { to: ROUTES.ADMIN_SOLICITUDES, label: 'Solicitudes', icon: <ClipboardList size={18} /> },
   { to: ROUTES.ADMIN_PROFORMAS, label: 'Proformas', icon: <FileSpreadsheet size={18} /> },
   { to: ROUTES.ADMIN_FACTURAS, label: 'Facturas', icon: <FileText size={18} /> },
   { to: ROUTES.ADMIN_CHOFERES, label: 'Choferes', icon: <Users size={18} /> },

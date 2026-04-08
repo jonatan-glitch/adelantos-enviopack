@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, CheckCircle, AlertCircle, CreditCard, Download } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, CreditCard, Download, Zap, Clock } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import api from '@/infrastructure/interceptors/api.interceptor'
 import type { Factura, Proforma } from '@/domain/models'
@@ -181,7 +181,7 @@ interface UploadModalProps {
 }
 
 const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) => {
-  const [opcion, setOpcion] = useState<'normal' | 'adelanto'>('normal')
+  const [opcion, setOpcion] = useState<'normal' | 'adelanto'>('adelanto')
   const [fileFactura, setFileFactura] = useState<File | null>(null)
   const [fileNC, setFileNC] = useState<File | null>(null)
   const [numeroFactura, setNumeroFactura] = useState('')
@@ -276,27 +276,31 @@ const UploadFacturaModal = ({ proforma, onClose, onSuccess }: UploadModalProps) 
         {/* Payment option */}
         <div className={styles.opcionGroup}>
           <p className={styles.fieldLabel}>¿Cómo querés cobrar?</p>
-          <div className={styles.opcionCards}>
+          <div className={styles.opcionCardsVertical}>
             <button
-              className={`${styles.opcionCard} ${opcion === 'normal' ? styles.opcionActive : ''}`}
-              onClick={() => setOpcion('normal')}
-              type="button"
-            >
-              <CheckCircle size={20} />
-              <div>
-                <p className={styles.opcionTitle}>Cobro normal</p>
-                <p className={styles.opcionDesc}>Total en 30 días</p>
-              </div>
-            </button>
-            <button
-              className={`${styles.opcionCard} ${opcion === 'adelanto' ? styles.opcionActive : ''}`}
+              className={`${styles.opcionCardFeatured} ${opcion === 'adelanto' ? styles.opcionFeaturedActive : ''}`}
               onClick={() => setOpcion('adelanto')}
               type="button"
             >
-              <CreditCard size={20} />
+              <div className={styles.opcionBadgeRecomendado}>Recomendado</div>
+              <div className={styles.opcionFeaturedContent}>
+                <Zap size={22} />
+                <div>
+                  <p className={styles.opcionTitle}>Cobro adelantado</p>
+                  <p className={styles.opcionDescFeatured}>Cobrá en 48hs hábiles</p>
+                  <p className={styles.opcionDescDetail}>Descuento del {proforma.tasa_aplicada}% — Acreditación rápida y segura</p>
+                </div>
+              </div>
+            </button>
+            <button
+              className={`${styles.opcionCardSecondary} ${opcion === 'normal' ? styles.opcionSecondaryActive : ''}`}
+              onClick={() => setOpcion('normal')}
+              type="button"
+            >
+              <Clock size={16} />
               <div>
-                <p className={styles.opcionTitle}>Cobro adelantado</p>
-                <p className={styles.opcionDesc}>En 48hs hábiles con {proforma.tasa_aplicada}% desc.</p>
+                <p className={styles.opcionTitleSecondary}>Cobro normal</p>
+                <p className={styles.opcionDesc}>Total sin descuento — Plazo de 30 días</p>
               </div>
             </button>
           </div>

@@ -162,30 +162,98 @@
   display: block;
 }
 
-.opcionCards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.opcionCardsVertical {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
-.opcionCard {
+/* Featured adelanto card */
+.opcionCardFeatured {
+  position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-gray-200);
+  flex-direction: column;
+  gap: 0;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-gray-200);
   background: white;
   cursor: pointer;
   text-align: left;
   transition: all 0.15s;
 }
 
-.opcionCard:hover { border-color: var(--color-accent); }
-
-.opcionActive {
+.opcionCardFeatured:hover {
   border-color: var(--color-accent);
-  background: var(--color-primary-light);
+}
+
+.opcionFeaturedActive {
+  border-color: var(--color-accent);
+  background: linear-gradient(135deg, #eef4ff 0%, #e8f0fe 100%);
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+}
+
+.opcionBadgeRecomendado {
+  position: absolute;
+  top: -10px;
+  right: 14px;
+  background: var(--color-accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.opcionFeaturedContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--color-accent);
+}
+
+.opcionDescFeatured {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.opcionDescDetail {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-top: 2px;
+}
+
+/* Secondary normal card */
+.opcionCardSecondary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-gray-200);
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  color: var(--color-gray-400);
+}
+
+.opcionCardSecondary:hover { border-color: var(--color-gray-400); }
+
+.opcionSecondaryActive {
+  border-color: var(--color-gray-500);
+  background: var(--color-gray-50);
+  color: var(--color-gray-600);
+}
+
+.opcionTitleSecondary {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-600);
 }
 
 .opcionTitle {

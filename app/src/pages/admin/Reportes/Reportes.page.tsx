@@ -15,7 +15,7 @@ export const ReportesPage = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-admin', periodo],
     queryFn: async () => {
-      const res = await api.get<{ data: DashboardAdmin }>(`/api/admin/dashboard?periodo=${periodo}`)
+      const res = await api.get<{ data: DashboardAdmin }>(`/api/admin/reportes?periodo=${periodo}`)
       return res.data.data
     },
   })
