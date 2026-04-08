@@ -28,7 +28,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
 # Cache bust — increment to force full rebuild
-ARG CACHE_BUST=41
+ARG CACHE_BUST=42
 
 # Copy source
 COPY . .

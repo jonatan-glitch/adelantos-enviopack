@@ -2,9 +2,10 @@
 
 namespace App\Controller\Chofer;
 
+use App\Constant\RolConstant;
 use App\Controller\AbstractApiController;
+use App\Entity\Chofer;
 use App\Entity\Factura;
-use App\Entity\SolicitudAdelanto;
 use App\Repository\ChoferRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,24 +23,46 @@ class DashboardController extends AbstractApiController
     public function index(): JsonResponse
     {
         $usuario = $this->getUsuario();
-        $chofer  = $this->choferRepo->findOneBy(['usuario' => $usuario, 'eliminado' => false]);
 
+        // If admin, return global stats
+        if (array_intersect($usuario->getRoles(), RolConstant::ROLES_ADMIN_PANEL)) {
+            return $this->ok($this->adminStats());
+        }
+
+        // Chofer stats
+        $chofer = $this->choferRepo->findOneBy(['usuario' => $usuario, 'eliminado' => false]);
         if (!$chofer) {
             return $this->ok(['facturas_disponibles' => 0, 'adelantos_pendientes' => 0, 'total_facturado' => 0, 'total_adelantado' => 0]);
         }
 
+        return $this->ok($this->choferStats($chofer));
+    }
+
+    private function choferStats(Chofer $chofer): array
+    {
         $em = $this->em;
 
         $facturasDisponibles = (int)$em->createQueryBuilder()
             ->select('COUNT(f.id)')->from(Factura::class, 'f')
-            ->where('f.chofer = :chofer')->andWhere('f.estado = :estado')->andWhere('f.eliminado = false')
-            ->setParameter('chofer', $chofer)->setParameter('estado', Factura::ESTADO_PENDIENTE_COBRO)
+            ->where('f.chofer = :chofer')
+            ->andWhere('f.estado IN (:estados)')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('chofer', $chofer)
+            ->setParameter('estados', [Factura::ESTADO_PENDIENTE_COBRO, Factura::ESTADO_COBRO_NORMAL])
             ->getQuery()->getSingleScalarResult();
 
         $adelantosPendientes = (int)$em->createQueryBuilder()
-            ->select('COUNT(s.id)')->from(SolicitudAdelanto::class, 's')
-            ->where('s.chofer = :chofer')->andWhere('s.estado = :estado')
-            ->setParameter('chofer', $chofer)->setParameter('estado', SolicitudAdelanto::ESTADO_EN_REVISION)
+            ->select('COUNT(f.id)')->from(Factura::class, 'f')
+            ->where('f.chofer = :chofer')
+            ->andWhere('f.opcion_cobro = :adelanto')
+            ->andWhere('f.estado IN (:estados)')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('chofer', $chofer)
+            ->setParameter('adelanto', 'adelanto')
+            ->setParameter('estados', [
+                Factura::ESTADO_CON_ADELANTO_SOLICITADO,
+                Factura::ESTADO_ADELANTO_APROBADO,
+            ])
             ->getQuery()->getSingleScalarResult();
 
         $totalFacturado = (float)($em->createQueryBuilder()
@@ -49,16 +72,75 @@ class DashboardController extends AbstractApiController
             ->getQuery()->getSingleScalarResult() ?? 0);
 
         $totalAdelantado = (float)($em->createQueryBuilder()
-            ->select('SUM(s.monto_neto)')->from(SolicitudAdelanto::class, 's')
-            ->where('s.chofer = :chofer')->andWhere('s.estado = :estado')
-            ->setParameter('chofer', $chofer)->setParameter('estado', SolicitudAdelanto::ESTADO_PAGADA)
+            ->select('SUM(f.monto_neto)')->from(Factura::class, 'f')
+            ->where('f.chofer = :chofer')
+            ->andWhere('f.opcion_cobro = :adelanto')
+            ->andWhere('f.estado IN (:estados)')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('chofer', $chofer)
+            ->setParameter('adelanto', 'adelanto')
+            ->setParameter('estados', [Factura::ESTADO_ADELANTO_PAGADO, Factura::ESTADO_PAGADA_COBRO_NORMAL])
             ->getQuery()->getSingleScalarResult() ?? 0);
 
-        return $this->ok([
+        return [
             'facturas_disponibles' => $facturasDisponibles,
             'adelantos_pendientes' => $adelantosPendientes,
             'total_facturado'      => $totalFacturado,
             'total_adelantado'     => $totalAdelantado,
-        ]);
+        ];
+    }
+
+    private function adminStats(): array
+    {
+        $em = $this->em;
+
+        // Facturas pending action (recibidas + en proceso)
+        $facturasDisponibles = (int)$em->createQueryBuilder()
+            ->select('COUNT(f.id)')->from(Factura::class, 'f')
+            ->where('f.estado IN (:estados)')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('estados', [
+                Factura::ESTADO_PENDIENTE_COBRO,
+                Factura::ESTADO_COBRO_NORMAL,
+                Factura::ESTADO_CON_ADELANTO_SOLICITADO,
+                Factura::ESTADO_ADELANTO_APROBADO,
+            ])
+            ->getQuery()->getSingleScalarResult();
+
+        // Adelantos awaiting approval or payment
+        $adelantosPendientes = (int)$em->createQueryBuilder()
+            ->select('COUNT(f.id)')->from(Factura::class, 'f')
+            ->where('f.opcion_cobro = :adelanto')
+            ->andWhere('f.estado IN (:estados)')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('adelanto', 'adelanto')
+            ->setParameter('estados', [
+                Factura::ESTADO_CON_ADELANTO_SOLICITADO,
+                Factura::ESTADO_ADELANTO_APROBADO,
+            ])
+            ->getQuery()->getSingleScalarResult();
+
+        // Total billed (all facturas)
+        $totalFacturado = (float)($em->createQueryBuilder()
+            ->select('SUM(f.monto_bruto)')->from(Factura::class, 'f')
+            ->where('f.eliminado = false')
+            ->getQuery()->getSingleScalarResult() ?? 0);
+
+        // Total paid as adelanto
+        $totalAdelantado = (float)($em->createQueryBuilder()
+            ->select('SUM(f.monto_neto)')->from(Factura::class, 'f')
+            ->where('f.opcion_cobro = :adelanto')
+            ->andWhere('f.estado IN (:estados)')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('adelanto', 'adelanto')
+            ->setParameter('estados', [Factura::ESTADO_ADELANTO_PAGADO, Factura::ESTADO_PAGADA_COBRO_NORMAL])
+            ->getQuery()->getSingleScalarResult() ?? 0);
+
+        return [
+            'facturas_disponibles' => $facturasDisponibles,
+            'adelantos_pendientes' => $adelantosPendientes,
+            'total_facturado'      => $totalFacturado,
+            'total_adelantado'     => $totalAdelantado,
+        ];
     }
 }
