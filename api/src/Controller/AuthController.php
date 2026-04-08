@@ -70,6 +70,12 @@ class AuthController extends AbstractApiController
         $errors = [];
         if (empty($data['nombre']))    { $errors['nombre']    = 'El nombre es obligatorio.'; }
         if (empty($data['apellido']))  { $errors['apellido']  = 'El apellido es obligatorio.'; }
+        if (!empty($data['nombre']) && filter_var($data['nombre'], FILTER_VALIDATE_EMAIL)) {
+            $errors['nombre'] = 'El nombre no puede ser un email.';
+        }
+        if (!empty($data['apellido']) && filter_var($data['apellido'], FILTER_VALIDATE_EMAIL)) {
+            $errors['apellido'] = 'El apellido no puede ser un email.';
+        }
         if (empty($data['dni']))       { $errors['dni']       = 'El DNI es obligatorio.'; }
         if (empty($data['cuil']))      { $errors['cuil']      = 'El CUIL es obligatorio.'; }
         if (empty($data['contrasena'])) { $errors['contrasena'] = 'La contraseña es obligatoria.'; }
@@ -122,6 +128,12 @@ class AuthController extends AbstractApiController
         $errors = [];
         if (empty($data['nombre']))     { $errors['nombre']     = 'El nombre es obligatorio.'; }
         if (empty($data['apellido']))   { $errors['apellido']   = 'El apellido es obligatorio.'; }
+        if (!empty($data['nombre']) && filter_var($data['nombre'], FILTER_VALIDATE_EMAIL)) {
+            $errors['nombre'] = 'El nombre no puede ser un email.';
+        }
+        if (!empty($data['apellido']) && filter_var($data['apellido'], FILTER_VALIDATE_EMAIL)) {
+            $errors['apellido'] = 'El apellido no puede ser un email.';
+        }
         if (empty($data['contrasena'])) { $errors['contrasena'] = 'La contraseña es obligatoria.'; }
         if (!empty($data['contrasena']) && strlen($data['contrasena']) < 8) {
             $errors['contrasena'] = 'La contraseña debe tener al menos 8 caracteres.';

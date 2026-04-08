@@ -60,6 +60,11 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return mb_convert_case(mb_strtolower($value, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
     }
+
+    private static function looksLikeEmail(string $value): bool
+    {
+        return (bool) filter_var($value, FILTER_VALIDATE_EMAIL);
+    }
     public function getRoles(): array { $roles = $this->roles; $roles[] = 'ROLE_USER'; return array_unique($roles); }
     public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
     public function getPassword(): string { return $this->contrasena; }
