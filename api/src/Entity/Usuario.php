@@ -52,9 +52,14 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     public function getEmail(): string { return $this->email; }
     public function setEmail(string $email): static { $this->email = $email; return $this; }
     public function getNombre(): string { return $this->nombre; }
-    public function setNombre(string $nombre): static { $this->nombre = $nombre; return $this; }
+    public function setNombre(string $nombre): static { $this->nombre = self::capitalizeName(trim($nombre)); return $this; }
     public function getApellido(): string { return $this->apellido; }
-    public function setApellido(string $apellido): static { $this->apellido = $apellido; return $this; }
+    public function setApellido(string $apellido): static { $this->apellido = self::capitalizeName(trim($apellido)); return $this; }
+
+    private static function capitalizeName(string $value): string
+    {
+        return mb_convert_case(mb_strtolower($value, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+    }
     public function getRoles(): array { $roles = $this->roles; $roles[] = 'ROLE_USER'; return array_unique($roles); }
     public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
     public function getPassword(): string { return $this->contrasena; }
