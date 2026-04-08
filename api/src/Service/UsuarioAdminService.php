@@ -112,8 +112,8 @@ class UsuarioAdminService
             ->select('u')
             ->from(Usuario::class, 'u')
             ->where('u.eliminado = false')
-            ->orderBy('LOWER(u.apellido)', 'ASC')
-            ->addOrderBy('LOWER(u.nombre)', 'ASC');
+            ->orderBy('LOWER(u.nombre)', 'ASC')
+            ->addOrderBy('LOWER(u.apellido)', 'ASC');
 
         $all = $qb->getQuery()->getResult();
 

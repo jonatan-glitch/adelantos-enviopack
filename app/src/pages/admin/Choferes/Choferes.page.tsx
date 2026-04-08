@@ -128,7 +128,7 @@ export const ChoferesPage = () => {
 
   const filteredData = useMemo(() => {
     const sorted = [...(data ?? [])].sort((a, b) =>
-      `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es', { sensitivity: 'base' })
+      `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`, 'es', { sensitivity: 'base' })
     )
     if (!search.trim()) return sorted
     const q = search.toLowerCase().trim()
