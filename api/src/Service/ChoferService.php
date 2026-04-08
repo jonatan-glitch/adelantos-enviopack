@@ -123,7 +123,8 @@ class ChoferService
             ->join('c.usuario', 'u')
             ->where('c.eliminado = false')
             ->andWhere('u.eliminado = false')
-            ->orderBy('u.apellido', 'ASC')
+            ->orderBy('LOWER(u.apellido)', 'ASC')
+            ->addOrderBy('LOWER(u.nombre)', 'ASC')
             ->setMaxResults($limit)
             ->setFirstResult($offset);
 
