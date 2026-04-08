@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { X, Upload, Download, FileText } from 'lucide-react'
+import { X, Upload, Download, FileText, Search } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import { toast } from 'react-toastify'
 import api from '@/infrastructure/interceptors/api.interceptor'
@@ -116,6 +116,7 @@ export const ChoferesPage = () => {
   const navigate = useNavigate()
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
+  const [search, setSearch] = useState('')
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-choferes'],
@@ -124,6 +125,17 @@ export const ChoferesPage = () => {
       return res.data.data.items
     },
   })
+
+  const filteredData = useMemo(() => {
+    const sorted = [...(data ?? [])].sort((a, b) =>
+      `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es')
+    )
+    if (!search.trim()) return sorted
+    const q = search.toLowerCase().trim()
+    return sorted.filter((c) =>
+      `${c.nombre} ${c.apellido} ${c.email} ${c.dni} ${c.cuil}`.toLowerCase().includes(q)
+    )
+  }, [data, search])
 
   const columns = [
     {
@@ -194,13 +206,29 @@ export const ChoferesPage = () => {
         </div>
       </div>
 
+      <div className={styles.searchBar}>
+        <Search size={16} className={styles.searchIcon} />
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Buscar por nombre, apellido, email, DNI o CUIT..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        {search && (
+          <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Limpiar">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       <DataTable
         columns={columns}
-        data={data ?? []}
+        data={filteredData}
         keyExtractor={(c) => c.id}
         loading={isLoading}
-        emptyTitle="Sin choferes"
-        emptyMessage="Invitá al primer chofer o importá la nómina desde un CSV."
+        emptyTitle={search ? 'Sin resultados' : 'Sin choferes'}
+        emptyMessage={search ? `No se encontraron choferes para "${search}".` : 'Invitá al primer chofer o importá la nómina desde un CSV.'}
         onRowClick={(c) => navigate(`/admin/choferes/${c.id}`)}
       />
 

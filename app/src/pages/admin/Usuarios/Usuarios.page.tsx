@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { X, Shield, ShieldCheck, Eye, Pencil } from 'lucide-react'
+import { X, Shield, ShieldCheck, Eye, Pencil, Search } from 'lucide-react'
 import { Button } from '@enviopack/epic-ui'
 import { toast } from 'react-toastify'
 import api from '@/infrastructure/interceptors/api.interceptor'
@@ -70,6 +70,7 @@ const inviteSchema = Yup.object({
 export const UsuariosPage = () => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
+  const [search, setSearch] = useState('')
   const { hasRole, hasAnyRole } = useRoles()
   const isSuperAdmin = hasRole(ROLES.ENVIOPACK_ADMIN)
   const isAdmin = hasAnyRole(ADMIN_ROLES)
@@ -81,6 +82,17 @@ export const UsuariosPage = () => {
       return res.data.data.items
     },
   })
+
+  const filteredData = useMemo(() => {
+    const sorted = [...(data ?? [])].sort((a, b) =>
+      `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es')
+    )
+    if (!search.trim()) return sorted
+    const q = search.toLowerCase().trim()
+    return sorted.filter((u) =>
+      `${u.nombre} ${u.apellido} ${u.email}`.toLowerCase().includes(q)
+    )
+  }, [data, search])
 
   const columns = [
     {
@@ -171,13 +183,29 @@ export const UsuariosPage = () => {
         )}
       </div>
 
+      <div className={styles.searchBar}>
+        <Search size={16} className={styles.searchIcon} />
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Buscar por nombre, apellido o email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        {search && (
+          <button className={styles.searchClear} onClick={() => setSearch('')} aria-label="Limpiar">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       <DataTable
         columns={columns}
-        data={data ?? []}
+        data={filteredData}
         keyExtractor={(u) => u.id}
         loading={isLoading}
-        emptyTitle="Sin usuarios"
-        emptyMessage="Invitá al primer usuario del equipo."
+        emptyTitle={search ? 'Sin resultados' : 'Sin usuarios'}
+        emptyMessage={search ? `No se encontraron usuarios para "${search}".` : 'Invitá al primer usuario del equipo.'}
       />
 
       {showInviteModal && (
