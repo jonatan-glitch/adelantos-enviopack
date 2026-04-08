@@ -69,7 +69,7 @@ export const ReportesPage = () => {
       color: 'blue',
     },
     {
-      title: 'Tiempo promedio aprobación',
+      title: 'Tiempo promedio de pago',
       value: `${stats?.tiempo_promedio_aprobacion_horas?.toFixed(1) ?? 0}hs`,
       icon: <Clock size={20} />,
       color: 'purple',

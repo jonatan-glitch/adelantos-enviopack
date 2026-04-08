@@ -5,7 +5,6 @@ namespace App\Controller\Admin;
 use App\Controller\AbstractApiController;
 use App\Entity\Chofer;
 use App\Entity\Factura;
-use App\Entity\SolicitudAdelanto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +22,7 @@ class ReporteController extends AbstractApiController
         [$desde, $hasta] = $this->resolverPeriodo($periodo);
         $em = $this->em;
 
-        // Total choferes (no date filter — it's a current count)
+        // Total choferes activos
         $totalChoferes = (int)$em->createQueryBuilder()
             ->select('COUNT(c.id)')
             ->from(Chofer::class, 'c')
@@ -31,52 +30,68 @@ class ReporteController extends AbstractApiController
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Monto total facturado (all facturas in period, not just adelantos)
-        $qbMonto = $em->createQueryBuilder()
+        // Monto total facturado (all facturas in period)
+        $montoTotal = (float)($em->createQueryBuilder()
             ->select('SUM(f.monto_bruto)')
             ->from(Factura::class, 'f')
             ->where('f.created_at >= :desde')
             ->andWhere('f.created_at <= :hasta')
+            ->andWhere('f.eliminado = false')
             ->setParameter('desde', $desde)
-            ->setParameter('hasta', $hasta);
-        $montoTotal = (float)($qbMonto->getQuery()->getSingleScalarResult() ?? 0);
+            ->setParameter('hasta', $hasta)
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0);
 
-        // Descuentos obtenidos (from paid adelantos in period)
-        $qbDesc = $em->createQueryBuilder()
-            ->select('SUM(s.monto_descontado)')
-            ->from(SolicitudAdelanto::class, 's')
-            ->where('s.estado = :estado')
-            ->andWhere('s.fecha_solicitud >= :desde')
-            ->andWhere('s.fecha_solicitud <= :hasta')
-            ->setParameter('estado', SolicitudAdelanto::ESTADO_PAGADA)
+        // Descuentos obtenidos = SUM(monto_bruto - monto_neto) for adelanto facturas pagadas
+        $descuentos = (float)($em->createQueryBuilder()
+            ->select('SUM(f.monto_bruto - f.monto_neto)')
+            ->from(Factura::class, 'f')
+            ->where('f.opcion_cobro = :adelanto')
+            ->andWhere('f.estado IN (:pagadas)')
+            ->andWhere('f.created_at >= :desde')
+            ->andWhere('f.created_at <= :hasta')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('adelanto', 'adelanto')
+            ->setParameter('pagadas', [
+                Factura::ESTADO_ADELANTO_PAGADO,
+                Factura::ESTADO_PAGADA_COBRO_NORMAL,
+            ])
             ->setParameter('desde', $desde)
-            ->setParameter('hasta', $hasta);
-        $descuentos = (float)($qbDesc->getQuery()->getSingleScalarResult() ?? 0);
+            ->setParameter('hasta', $hasta)
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0);
 
-        // Choferes con adelanto (in period)
-        $qbConAdelanto = $em->createQueryBuilder()
-            ->select('COUNT(DISTINCT s.chofer)')
-            ->from(SolicitudAdelanto::class, 's')
-            ->where('s.estado IN (:estados)')
-            ->andWhere('s.fecha_solicitud >= :desde')
-            ->andWhere('s.fecha_solicitud <= :hasta')
-            ->setParameter('estados', [SolicitudAdelanto::ESTADO_APROBADA, SolicitudAdelanto::ESTADO_PAGADA])
+        // Choferes con adelanto (distinct choferes that chose adelanto in period)
+        $conAdelanto = (int)$em->createQueryBuilder()
+            ->select('COUNT(DISTINCT f.chofer)')
+            ->from(Factura::class, 'f')
+            ->where('f.opcion_cobro = :adelanto')
+            ->andWhere('f.created_at >= :desde')
+            ->andWhere('f.created_at <= :hasta')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('adelanto', 'adelanto')
             ->setParameter('desde', $desde)
-            ->setParameter('hasta', $hasta);
-        $conAdelanto = (int)$qbConAdelanto->getQuery()->getSingleScalarResult();
+            ->setParameter('hasta', $hasta)
+            ->getQuery()
+            ->getSingleScalarResult();
 
-        // Tasa promedio (in period)
-        $qbTasa = $em->createQueryBuilder()
-            ->select('AVG(s.tasa_aplicada)')
-            ->from(SolicitudAdelanto::class, 's')
-            ->where('s.fecha_solicitud >= :desde')
-            ->andWhere('s.fecha_solicitud <= :hasta')
+        // Tasa promedio from proformas linked to facturas in period
+        $tasaPromedio = (float)($em->createQueryBuilder()
+            ->select('AVG(p.tasa_aplicada)')
+            ->from(Factura::class, 'f')
+            ->join('f.proforma', 'p')
+            ->where('f.opcion_cobro = :adelanto')
+            ->andWhere('f.created_at >= :desde')
+            ->andWhere('f.created_at <= :hasta')
+            ->andWhere('f.eliminado = false')
+            ->setParameter('adelanto', 'adelanto')
             ->setParameter('desde', $desde)
-            ->setParameter('hasta', $hasta);
-        $tasaPromedio = (float)($qbTasa->getQuery()->getSingleScalarResult() ?? 0);
+            ->setParameter('hasta', $hasta)
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0);
 
-        // Tiempo promedio de aprobación (horas)
-        $tiempoPromedio = $this->calcularTiempoPromedioAprobacion($desde, $hasta);
+        // Tiempo promedio de pago (horas entre created_at y fecha_pago)
+        $tiempoPromedio = $this->calcularTiempoPromedioPago($desde, $hasta);
 
         return $this->ok([
             'monto_total_facturado'            => $montoTotal,
@@ -116,15 +131,16 @@ class ReporteController extends AbstractApiController
         };
     }
 
-    private function calcularTiempoPromedioAprobacion(\DateTimeImmutable $desde, \DateTimeImmutable $hasta): float
+    private function calcularTiempoPromedioPago(\DateTimeImmutable $desde, \DateTimeImmutable $hasta): float
     {
         $conn = $this->em->getConnection();
         $sql = "
-            SELECT AVG(EXTRACT(EPOCH FROM (fecha_aprobacion - fecha_solicitud)) / 3600) as promedio_horas
-            FROM solicitud_adelanto
-            WHERE fecha_aprobacion IS NOT NULL
-            AND fecha_solicitud >= :desde
-            AND fecha_solicitud <= :hasta
+            SELECT AVG(EXTRACT(EPOCH FROM (fecha_pago - created_at)) / 3600) as promedio_horas
+            FROM factura
+            WHERE fecha_pago IS NOT NULL
+            AND eliminado = false
+            AND created_at >= :desde
+            AND created_at <= :hasta
         ";
         $result = $conn->fetchOne($sql, [
             'desde' => $desde->format('Y-m-d H:i:s'),
