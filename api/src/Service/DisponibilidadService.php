@@ -11,7 +11,9 @@ use Doctrine\ORM\EntityManagerInterface;
 class DisponibilidadService
 {
     private const DESTINATARIOS = [
-        'jonatan@enviopack.com',
+        'gonzalo.b@enviopack.com',
+        'camila.guaracio@enviopack.com',
+        'trafico.ar@enviopack.com',
     ];
 
     public function __construct(
