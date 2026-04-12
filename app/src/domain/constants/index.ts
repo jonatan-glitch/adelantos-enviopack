@@ -41,6 +41,7 @@ export const ROUTES = {
   ADMIN_CONFIGURACION: '/admin/configuracion',
   ADMIN_REPORTES: '/admin/reportes',
   ADMIN_CHOFER_DETALLE: '/admin/choferes/:id',
+  ADMIN_DISPONIBILIDAD: '/admin/disponibilidad',
 
   // Public — admin registration
   REGISTRO_ADMIN: '/registro-admin/:token',
@@ -60,6 +61,7 @@ export const API_ROUTES = {
   DASHBOARD: '/api/dashboard',
   REPORTES: '/api/reportes',
   USUARIOS: '/api/usuarios',
+  ADMIN_DISPONIBILIDAD: '/api/admin/disponibilidad',
 }
 
 export const EXCLUDED_AUTH_URLS = [

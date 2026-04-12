@@ -171,6 +171,37 @@ class EmailService
         return $this->send($toEmail, 'Completá tu registro en Enviopack Adelantos', $html);
     }
 
+    public function sendDisponibilidadChoferes(array $toEmails, string $fechaLabel, array $nombres): bool
+    {
+        $listHtml = implode('', array_map(
+            fn(int $i, string $n) => '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#555;width:30px">' . ($i + 1) . '</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:500">' . htmlspecialchars($n) . '</td></tr>',
+            array_keys($nombres),
+            $nombres
+        ));
+        $total = count($nombres);
+
+        $html = <<<HTML
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
+          <h2 style="margin-top:0">Choferes disponibles para el {$fechaLabel}</h2>
+          <p>Se registraron <strong>{$total} chofer(es)</strong> disponibles para tomar carga:</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;overflow:hidden">
+            <tr style="background:#e5e7eb"><th style="padding:8px 12px;text-align:left;font-size:13px;color:#374151">#</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#374151">Nombre</th></tr>
+            {$listHtml}
+          </table>
+          <p style="font-size:13px;color:#555;margin-top:16px">Email generado automáticamente desde Enviopack Adelantos.</p>
+        </div>
+        HTML;
+
+        $subject = "Choferes disponibles — {$fechaLabel}";
+        $ok = true;
+        foreach ($toEmails as $email) {
+            if (!$this->send(trim($email), $subject, $html)) {
+                $ok = false;
+            }
+        }
+        return $ok;
+    }
+
     private function send(string $to, string $subject, string $html): bool
     {
         if (!$this->apiKey) {

@@ -31,6 +31,7 @@ import { ConfiguracionPage } from '@/pages/admin/Configuracion/Configuracion.pag
 import { ReportesPage } from '@/pages/admin/Reportes/Reportes.page'
 import { FacturasAdminPage } from '@/pages/admin/Facturas/Facturas.page'
 import { UsuariosPage } from '@/pages/admin/Usuarios/Usuarios.page'
+import { DisponibilidadPage } from '@/pages/admin/Disponibilidad/Disponibilidad.page'
 
 const NotFound = () => (
   <div style={{
@@ -119,6 +120,14 @@ export const AppRoutes = () => (
           element={
             <PermissionGuard requiredRoles={ADMIN_ROLES}>
               <ConfiguracionPage />
+            </PermissionGuard>
+          }
+        />
+        <Route
+          path={ROUTES.ADMIN_DISPONIBILIDAD}
+          element={
+            <PermissionGuard requiredRoles={SUPERVISOR_ROLES}>
+              <DisponibilidadPage />
             </PermissionGuard>
           }
         />
