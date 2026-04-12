@@ -38,7 +38,13 @@ class DisponibilidadService
         }
 
         $disp->setChoferesIds(array_map('intval', $choferesIds));
-        $disp->setChoferesManuales(array_values(array_filter(array_map('trim', $choferesManuales))));
+        // choferesManuales can be a flat list ["name1","name2"] or associative {"deposito": ["pat1","pat2"]}
+        if (!empty($choferesManuales) && !array_is_list($choferesManuales)) {
+            // Associative: store as-is (deposito => patentes)
+            $disp->setChoferesManuales($choferesManuales);
+        } else {
+            $disp->setChoferesManuales(array_values(array_filter(array_map('trim', $choferesManuales))));
+        }
         $disp->setUpdatedAt(new \DateTimeImmutable());
 
         $this->em->flush();
