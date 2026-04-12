@@ -36,7 +36,7 @@ export const DisponibilidadPage = () => {
     queryKey: ['admin-choferes-disponibilidad'],
     queryFn: async () => {
       const res = await api.get<{ items: Chofer[] }>('/api/admin/choferes?page=1&limit=500')
-      return res.data.items
+      return res.data.items ?? []
     },
   })
 
@@ -51,16 +51,15 @@ export const DisponibilidadPage = () => {
   })
 
   // Sync state when dispData changes
-  const dispKey = dispData ? `${dispData.fecha}-${dispData.choferes_ids.join(',')}-${dispData.choferes_manuales.join(',')}` : ''
-  useState(() => {
-    // This runs on mount; useEffect equivalent via query onSuccess is below
-  })
+  const ids = dispData?.choferes_ids ?? []
+  const mans = dispData?.choferes_manuales ?? []
+  const dispKey = dispData ? `${dispData.fecha}-${ids.join(',')}-${mans.join(',')}` : ''
 
   // Update local state when server data loads
   useMemo(() => {
     if (dispData) {
-      setSelectedIds(dispData.choferes_ids)
-      setManuales(dispData.choferes_manuales)
+      setSelectedIds(dispData.choferes_ids ?? [])
+      setManuales(dispData.choferes_manuales ?? [])
       setDirty(false)
     } else {
       setSelectedIds([])
