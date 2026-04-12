@@ -87,6 +87,9 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
+# Cron job — disponibilidad de choferes L-V 16hs AR (19 UTC)
+COPY docker/crontab /etc/crontabs/root
+
 RUN mkdir -p /var/log/nginx /run/nginx /var/log/supervisor /run/php-fpm /app/public/uploads \
  && chmod -R 777 /app/public/uploads
 

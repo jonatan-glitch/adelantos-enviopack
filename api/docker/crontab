@@ -1,0 +1,2 @@
+# Enviar disponibilidad de choferes L-V a las 16:00 (Argentina UTC-3 = 19:00 UTC)
+0 19 * * 1-5 cd /app && php bin/console app:enviar-disponibilidad --env=prod --no-debug >> /var/log/supervisor/cron.log 2>&1
