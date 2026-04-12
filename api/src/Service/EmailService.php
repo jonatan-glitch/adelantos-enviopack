@@ -171,23 +171,41 @@ class EmailService
         return $this->send($toEmail, 'Completá tu registro en Enviopack Adelantos', $html);
     }
 
-    public function sendDisponibilidadChoferes(array $toEmails, string $fechaLabel, array $nombres): bool
+    /**
+     * @param array $toEmails
+     * @param string $fechaLabel  e.g. "13/04/2026"
+     * @param array $depositos    e.g. ['V.Lynch' => ['AA136TL','AB914OH'], 'El Jaguel' => ['AA398FV']]
+     */
+    public function sendDisponibilidadChoferes(array $toEmails, string $fechaLabel, array $depositos): bool
     {
-        $listHtml = implode('', array_map(
-            fn(int $i, string $n) => '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#555;width:30px">' . ($i + 1) . '</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:500">' . htmlspecialchars($n) . '</td></tr>',
-            array_keys($nombres),
-            $nombres
-        ));
-        $total = count($nombres);
+        $total = 0;
+        $sectionsHtml = '';
+
+        foreach ($depositos as $deposito => $patentes) {
+            $count = count($patentes);
+            $total += $count;
+
+            $rowsHtml = '';
+            foreach ($patentes as $i => $patente) {
+                $rowsHtml .= '<tr><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#555;width:30px;font-size:13px">' . ($i + 1) . '</td><td style="padding:6px 12px;border-bottom:1px solid #eee;font-weight:500;font-size:14px">' . htmlspecialchars($patente) . '</td></tr>';
+            }
+
+            $sectionsHtml .= <<<HTML
+            <div style="margin-bottom:20px">
+              <h3 style="margin:0 0 8px;font-size:15px;color:#1f2937;border-bottom:2px solid #2563EB;padding-bottom:6px">{$deposito} ({$count})</h3>
+              <table style="width:100%;border-collapse:collapse;background:#f9fafb;border-radius:8px;overflow:hidden">
+                <tr style="background:#e5e7eb"><th style="padding:6px 12px;text-align:left;font-size:12px;color:#374151">#</th><th style="padding:6px 12px;text-align:left;font-size:12px;color:#374151">Patente</th></tr>
+                {$rowsHtml}
+              </table>
+            </div>
+            HTML;
+        }
 
         $html = <<<HTML
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
           <h2 style="margin-top:0">Choferes disponibles para el {$fechaLabel}</h2>
           <p>Se registraron <strong>{$total} chofer(es)</strong> disponibles para tomar carga:</p>
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f9fafb;border-radius:8px;overflow:hidden">
-            <tr style="background:#e5e7eb"><th style="padding:8px 12px;text-align:left;font-size:13px;color:#374151">#</th><th style="padding:8px 12px;text-align:left;font-size:13px;color:#374151">Nombre</th></tr>
-            {$listHtml}
-          </table>
+          {$sectionsHtml}
           <p style="font-size:13px;color:#555;margin-top:16px">Email generado automáticamente desde Enviopack Adelantos.</p>
         </div>
         HTML;

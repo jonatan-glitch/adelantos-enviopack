@@ -48,15 +48,15 @@ class DisponibilidadService
 
     public function enviarEmail(DisponibilidadDiaria $disp): bool
     {
-        $nombres = $this->resolverNombres($disp);
+        $depositos = $this->resolverDepositos($disp);
 
-        if (empty($nombres)) {
+        if (empty($depositos)) {
             error_log('[DisponibilidadService] No hay choferes disponibles para enviar');
             return false;
         }
 
         $fechaLabel = $disp->getFecha()->format('d/m/Y');
-        $ok = $this->emailService->sendDisponibilidadChoferes(self::DESTINATARIOS, $fechaLabel, $nombres);
+        $ok = $this->emailService->sendDisponibilidadChoferes(self::DESTINATARIOS, $fechaLabel, $depositos);
 
         if ($ok) {
             $disp->setEnviado(true);
@@ -69,12 +69,19 @@ class DisponibilidadService
     }
 
     /**
-     * @return string[] lista de nombres completos
+     * @return array<string, string[]> deposito => patentes/nombres
      */
-    private function resolverNombres(DisponibilidadDiaria $disp): array
+    private function resolverDepositos(DisponibilidadDiaria $disp): array
     {
-        $nombres = [];
+        $depositos = [];
+        $manuales = $disp->getChoferesManuales();
 
+        // If choferes_manuales is associative (deposito => patentes[]), use directly
+        if (!empty($manuales) && !array_is_list($manuales)) {
+            return $manuales;
+        }
+
+        // If choferes from system
         if (!empty($disp->getChoferesIds())) {
             $choferes = $this->em->createQueryBuilder()
                 ->select('c')
@@ -87,15 +94,20 @@ class DisponibilidadService
                 ->getQuery()
                 ->getResult();
 
+            $general = [];
             foreach ($choferes as $c) {
-                $nombres[] = $c->getNombre() . ' ' . $c->getApellido();
+                $general[] = $c->getNombre() . ' ' . $c->getApellido();
+            }
+            if (!empty($general)) {
+                $depositos['Choferes del sistema'] = $general;
             }
         }
 
-        foreach ($disp->getChoferesManuales() as $nombre) {
-            $nombres[] = $nombre;
+        // Flat list of manual names (legacy format)
+        if (!empty($manuales) && array_is_list($manuales)) {
+            $depositos['Choferes adicionales'] = $manuales;
         }
 
-        return $nombres;
+        return $depositos;
     }
 }
