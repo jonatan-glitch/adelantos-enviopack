@@ -13,13 +13,13 @@ export const ConfiguracionPage = () => {
   const { data: config } = useQuery({
     queryKey: ['configuracion'],
     queryFn: async () => {
-      const res = await api.get<{ data: ConfiguracionSistema }>('/api/configuracion')
+      const res = await api.get<{ data: ConfiguracionSistema }>('/api/admin/configuracion')
       return res.data.data
     },
   })
 
   const mutation = useMutation({
-    mutationFn: (values: ConfiguracionSistema) => api.put('/api/configuracion', values),
+    mutationFn: (values: ConfiguracionSistema) => api.put('/api/admin/configuracion', values),
     onSuccess: () => {
       toast.success('Configuración guardada correctamente')
       qc.invalidateQueries({ queryKey: ['configuracion'] })
@@ -34,23 +34,35 @@ export const ConfiguracionPage = () => {
 
   useEffect(() => {
     if (config) {
-      setTasa(String(config.tasa_global))
-      setDias(String(config.dias_cobro_normal))
-      setPlazo(String(config.plazo_acreditacion_horas))
-      setEmails(config.emails_notificacion_admin.join(', '))
+      setTasa(String(config.tasa_global ?? TASA_MINIMA))
+      setDias(String(config.dias_cobro_normal ?? 30))
+      setPlazo(String(config.plazo_acreditacion_horas ?? 48))
+      setEmails((config.emails_notificacion_admin ?? []).join(', '))
     }
   }, [config])
 
   const handleSave = () => {
     const tasaNum = parseFloat(tasa)
-    if (tasaNum < TASA_MINIMA) {
+    const diasNum = parseInt(dias) || 30
+    const plazoNum = parseInt(plazo) || 48
+
+    if (isNaN(tasaNum) || tasaNum < TASA_MINIMA) {
       toast.error(`La tasa mínima es ${TASA_MINIMA}%`)
       return
     }
+    if (diasNum < 1) {
+      toast.error('Los días de cobro normal deben ser al menos 1')
+      return
+    }
+    if (plazoNum < 1) {
+      toast.error('El plazo de acreditación debe ser al menos 1 hora')
+      return
+    }
+
     mutation.mutate({
       tasa_global: tasaNum,
-      dias_cobro_normal: parseInt(dias),
-      plazo_acreditacion_horas: parseInt(plazo),
+      dias_cobro_normal: diasNum,
+      plazo_acreditacion_horas: plazoNum,
       emails_notificacion_admin: emails.split(',').map((e) => e.trim()).filter(Boolean),
     })
   }
