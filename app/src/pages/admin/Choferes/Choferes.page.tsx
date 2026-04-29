@@ -188,8 +188,8 @@ export const ChoferesPage = () => {
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Choferes</h1>
-          <p className={styles.pageSubtitle}>Gestión de choferes registrados en la plataforma</p>
+          <h1 className={styles.pageTitle}>Proveedores</h1>
+          <p className={styles.pageSubtitle}>Gestión de proveedores registrados en la plataforma</p>
         </div>
 
         <div className={styles.headerActions}>
@@ -202,7 +202,7 @@ export const ChoferesPage = () => {
             onClick={() => setShowImportModal(true)}
           />
           <Button
-            label="Invitar chofer"
+            label="Invitar proveedor"
             icon="user-linear"
             variant="solid"
             color="blue"
@@ -233,8 +233,8 @@ export const ChoferesPage = () => {
         data={filteredData}
         keyExtractor={(c) => c.id}
         loading={isLoading}
-        emptyTitle={search ? 'Sin resultados' : 'Sin choferes'}
-        emptyMessage={search ? `No se encontraron choferes para "${search}".` : 'Invitá al primer chofer o importá la nómina desde un CSV.'}
+        emptyTitle={search ? 'Sin resultados' : 'Sin proveedores'}
+        emptyMessage={search ? `No se encontraron proveedores para "${search}".` : 'Invitá al primer proveedor o importá la nómina desde un CSV.'}
         onRowClick={(c) => navigate(`/admin/choferes/${c.id}`)}
       />
 
@@ -282,7 +282,7 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Invitar choferes</h3>
+          <h3 className={styles.modalTitle}>Invitar proveedores</h3>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>
@@ -299,13 +299,13 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
               <Form>
                 <div className={styles.modalBody}>
                   <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-500)', lineHeight: 1.6 }}>
-                    Cada chofer recibirá un email con un enlace para completar su registro.
+                    Cada proveedor recibirá un email con un enlace para completar su registro.
                     Podés invitar a varios a la vez separando los emails con <strong>;</strong>, <strong>,</strong> o salto de línea.
                   </p>
 
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor="invite-email">
-                      Emails de los choferes *
+                      Emails de los proveedores *
                     </label>
                     <Field
                       id="invite-email"
@@ -314,7 +314,7 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
                       rows={5}
                       className={styles.input}
                       style={{ fontFamily: 'inherit', resize: 'vertical', minHeight: 100 }}
-                      placeholder="chofer1@ejemplo.com; chofer2@ejemplo.com&#10;chofer3@ejemplo.com"
+                      placeholder="proveedor1@ejemplo.com; proveedor2@ejemplo.com&#10;proveedor3@ejemplo.com"
                       autoFocus
                     />
                     <ErrorMessage name="email" component="p" className={styles.error} />
@@ -381,7 +381,7 @@ const ImportCsvModal = ({ onClose }: { onClose: () => void }) => {
       const created: number =
         (res.data as { data?: { creados?: number } })?.data?.creados ?? validRows.length
       toast.success(
-        `${created} ${created === 1 ? 'chofer importado' : 'choferes importados'} correctamente.`,
+        `${created} ${created === 1 ? 'proveedor importado' : 'proveedores importados'} correctamente.`,
       )
       qc.invalidateQueries({ queryKey: ['admin-choferes'] })
       onClose()
@@ -427,7 +427,7 @@ const ImportCsvModal = ({ onClose }: { onClose: () => void }) => {
   const importLabel = importMutation.isPending
     ? 'Importando...'
     : parsedRows
-    ? `Importar ${validRows.length} ${validRows.length === 1 ? 'chofer' : 'choferes'}`
+    ? `Importar ${validRows.length} ${validRows.length === 1 ? 'proveedor' : 'proveedores'}`
     : 'Importar'
 
   return (
@@ -437,7 +437,7 @@ const ImportCsvModal = ({ onClose }: { onClose: () => void }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Importar choferes desde CSV</h3>
+          <h3 className={styles.modalTitle}>Importar proveedores desde CSV</h3>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>

@@ -81,12 +81,12 @@ export const ChoferDetallePage = () => {
       api.put(`/api/admin/choferes/${id}`, { habilitado: !chofer?.habilitado }),
     onSuccess: () => {
       toast.success(
-        chofer?.habilitado ? 'Chofer deshabilitado correctamente' : 'Chofer habilitado correctamente'
+        chofer?.habilitado ? 'Proveedor deshabilitado correctamente' : 'Proveedor habilitado correctamente'
       )
       qc.invalidateQueries({ queryKey: ['admin-chofer', id] })
       qc.invalidateQueries({ queryKey: ['admin-choferes'] })
     },
-    onError: () => toast.error('Error al actualizar el estado del chofer'),
+    onError: () => toast.error('Error al actualizar el estado del proveedor'),
   })
 
   const tasaMutation = useMutation({
@@ -147,7 +147,7 @@ export const ChoferDetallePage = () => {
       <div className={styles.centered}>
         <p className={styles.notFound}>No se encontró el chofer.</p>
         <button className={styles.backLink} onClick={() => navigate(ROUTES.ADMIN_CHOFERES)}>
-          <ArrowLeft size={16} /> Volver a choferes
+          <ArrowLeft size={16} /> Volver a proveedores
         </button>
       </div>
     )
@@ -161,7 +161,7 @@ export const ChoferDetallePage = () => {
       {/* Back button */}
       <button className={styles.backLink} onClick={() => navigate(ROUTES.ADMIN_CHOFERES)}>
         <ArrowLeft size={16} />
-        Volver a choferes
+        Volver a proveedores
       </button>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -200,7 +200,7 @@ export const ChoferDetallePage = () => {
 
         {/* Info card */}
         <div className={styles.card}>
-          <h2 className={styles.cardTitle}>Información del chofer</h2>
+          <h2 className={styles.cardTitle}>Información del proveedor</h2>
           <div className={styles.infoGrid}>
             <InfoRow label="Email" value={chofer.email} />
             <InfoRow label="DNI" value={chofer.dni} />
@@ -299,7 +299,7 @@ export const ChoferDetallePage = () => {
         ) : !adelantos || adelantos.length === 0 ? (
           <div className={styles.emptyTable}>
             <p className={styles.emptyTitle}>Sin adelantos</p>
-            <p className={styles.emptyMsg}>Este chofer aún no ha solicitado adelantos.</p>
+            <p className={styles.emptyMsg}>Este proveedor aún no ha solicitado adelantos.</p>
           </div>
         ) : (
           <div className={styles.tableWrapper}>

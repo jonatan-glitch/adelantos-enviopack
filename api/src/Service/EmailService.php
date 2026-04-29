@@ -203,14 +203,14 @@ class EmailService
 
         $html = <<<HTML
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#111">
-          <h2 style="margin-top:0">Choferes disponibles para el {$fechaLabel}</h2>
-          <p>Se registraron <strong>{$total} chofer(es)</strong> disponibles para tomar carga:</p>
+          <h2 style="margin-top:0">Proveedores disponibles para el {$fechaLabel}</h2>
+          <p>Se registraron <strong>{$total} proveedor(es)</strong> disponibles para tomar carga:</p>
           {$sectionsHtml}
           <p style="font-size:13px;color:#555;margin-top:16px">Email generado automáticamente desde Enviopack Adelantos.</p>
         </div>
         HTML;
 
-        $subject = "Choferes disponibles — {$fechaLabel}";
+        $subject = "Proveedores disponibles — {$fechaLabel}";
         $ok = true;
         foreach ($toEmails as $email) {
             if (!$this->send(trim($email), $subject, $html)) {

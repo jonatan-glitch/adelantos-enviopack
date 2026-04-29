@@ -138,7 +138,7 @@ export const ConfiguracionPage = () => {
             <div className={styles.field}>
               <label className={styles.label}>Emails de administración</label>
               <p className={styles.hint}>
-                Estos emails recibirán notificaciones cuando un chofer suba una factura.
+                Estos emails recibirán notificaciones cuando un proveedor suba una factura.
                 Separados por coma.
               </p>
               <textarea

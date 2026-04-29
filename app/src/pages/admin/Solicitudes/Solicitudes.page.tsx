@@ -42,7 +42,7 @@ export const SolicitudesPage = () => {
   const columns = [
     {
       key: 'chofer',
-      title: 'Chofer',
+      title: 'Proveedor',
       render: (s: SolicitudAdelanto) => (
         <div>
           <p style={{ fontWeight: 600 }}>{s.chofer.nombre} {s.chofer.apellido}</p>
@@ -286,7 +286,7 @@ const RegistrarPagoModal = ({
         comprobante_url: comprobanteUrl,
       })
     },
-    onSuccess: () => { toast.success('Pago registrado correctamente. El chofer fue notificado por email.'); onSuccess() },
+    onSuccess: () => { toast.success('Pago registrado correctamente. El proveedor fue notificado por email.'); onSuccess() },
     onError: () => toast.error('Error al registrar el pago'),
   })
 
@@ -300,7 +300,7 @@ const RegistrarPagoModal = ({
         <div className={styles.modalBody}>
           <div className={styles.resumen}>
             <div className={styles.resumenRow}>
-              <span>Chofer</span>
+              <span>Proveedor</span>
               <strong>{solicitud.chofer.nombre} {solicitud.chofer.apellido}</strong>
             </div>
             <div className={styles.resumenRow}>

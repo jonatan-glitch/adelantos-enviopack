@@ -78,7 +78,7 @@ export const ProformasPage = () => {
       return res
     },
     onSuccess: () => {
-      toast.success('Proforma creada. El chofer recibirá una notificación.')
+      toast.success('Proforma creada. El proveedor recibirá una notificación.')
       setShowModal(false)
       setDocFile(null)
       qc.invalidateQueries({ queryKey: ['admin-proformas'] })
@@ -118,7 +118,7 @@ export const ProformasPage = () => {
   const columns = [
     {
       key: 'chofer',
-      title: 'Chofer',
+      title: 'Proveedor',
       render: (p: Proforma) => (
         <div>
           <p style={{ fontWeight: 600 }}>{p.chofer.nombre} {p.chofer.apellido}</p>
@@ -142,7 +142,7 @@ export const ProformasPage = () => {
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Proformas</h1>
-          <p className={styles.pageSubtitle}>Cargá las proformas para que los choferes puedan facturar</p>
+          <p className={styles.pageSubtitle}>Cargá las proformas para que los proveedores puedan facturar</p>
         </div>
         <Button
           label="Nueva proforma"
@@ -192,9 +192,9 @@ export const ProformasPage = () => {
                   <div className={styles.modalBody}>
                     {/* Chofer */}
                     <div className={styles.field}>
-                      <label className={styles.label}>Chofer *</label>
+                      <label className={styles.label}>Proveedor *</label>
                       <Field as="select" name="chofer_id" className={styles.input}>
-                        <option value="">Seleccioná un chofer...</option>
+                        <option value="">Seleccioná un proveedor...</option>
                         {choferes?.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.nombre} {c.apellido} — DNI {c.dni}

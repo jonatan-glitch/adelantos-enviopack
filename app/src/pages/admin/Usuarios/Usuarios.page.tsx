@@ -311,7 +311,7 @@ const InviteUserModal = ({ onClose }: { onClose: () => void }) => {
                   <Eye size={14} color="var(--color-warning)" />
                   <div>
                     <strong>Supervisor Operativo</strong>
-                    <p>Solo lectura: puede ver solicitudes, facturas, reportes e invitar choferes. No puede crear proformas ni aprobar pagos.</p>
+                    <p>Solo lectura: puede ver solicitudes, facturas, reportes e invitar proveedores. No puede crear proformas ni aprobar pagos.</p>
                   </div>
                 </div>
               </div>
@@ -431,7 +431,7 @@ const ChangeRoleModal = ({ user, onClose }: { user: AdminUser; onClose: () => vo
                   <Eye size={14} color="var(--color-warning)" />
                   <div>
                     <strong>Supervisor Operativo</strong>
-                    <p>Solo lectura: puede ver solicitudes, facturas, reportes e invitar choferes. No puede crear proformas ni aprobar pagos.</p>
+                    <p>Solo lectura: puede ver solicitudes, facturas, reportes e invitar proveedores. No puede crear proformas ni aprobar pagos.</p>
                   </div>
                 </div>
               </div>

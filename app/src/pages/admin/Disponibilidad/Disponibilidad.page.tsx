@@ -175,9 +175,9 @@ export const DisponibilidadPage = () => {
       {/* Header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerLeft}>
-          <h1 className={styles.pageTitle}>Disponibilidad de choferes</h1>
+          <h1 className={styles.pageTitle}>Disponibilidad de proveedores</h1>
           <p className={styles.pageSubtitle}>
-            Marcá los choferes disponibles para tomar carga y enviá el reporte por email
+            Marcá los proveedores disponibles para tomar carga y enviá el reporte por email
           </p>
         </div>
       </div>
@@ -205,8 +205,8 @@ export const DisponibilidadPage = () => {
       <div className={styles.sections}>
         {/* Section: Choferes del sistema */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Choferes registrados</h2>
-          <p className={styles.sectionSubtitle}>Seleccioná los choferes que están disponibles</p>
+          <h2 className={styles.sectionTitle}>Proveedores registrados</h2>
+          <p className={styles.sectionSubtitle}>Seleccioná los proveedores que están disponibles</p>
 
           <div className={styles.searchBar}>
             <Search size={16} className={styles.searchIcon} />
@@ -228,7 +228,7 @@ export const DisponibilidadPage = () => {
             <div className={styles.emptyList}>Cargando...</div>
           ) : filtered.length === 0 ? (
             <div className={styles.emptyList}>
-              {search ? 'No se encontraron choferes' : 'No hay choferes registrados'}
+              {search ? 'No se encontraron proveedores' : 'No hay proveedores registrados'}
             </div>
           ) : (
             <div className={styles.checklist}>
@@ -256,15 +256,15 @@ export const DisponibilidadPage = () => {
           )}
 
           <p className={styles.selectedCount}>
-            {selectedIds.length} chofer(es) del sistema seleccionados
+            {selectedIds.length} proveedor(es) del sistema seleccionados
           </p>
         </div>
 
         {/* Section: Choferes manuales */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Choferes adicionales</h2>
+          <h2 className={styles.sectionTitle}>Proveedores adicionales</h2>
           <p className={styles.sectionSubtitle}>
-            Agregá nombres de choferes que no están en el sistema
+            Agregá nombres de proveedores que no están en el sistema
           </p>
 
           <div className={styles.addRow}>
@@ -295,7 +295,7 @@ export const DisponibilidadPage = () => {
           )}
 
           {manuales.length === 0 && (
-            <div className={styles.emptyList}>No se agregaron choferes adicionales</div>
+            <div className={styles.emptyList}>No se agregaron proveedores adicionales</div>
           )}
         </div>
       </div>
@@ -312,7 +312,7 @@ export const DisponibilidadPage = () => {
           <Send size={16} /> {dispData?.enviado ? 'Reenviar email' : 'Enviar email'}
         </Button>
         <span className={styles.footerInfo}>
-          {totalSelected} chofer(es) disponibles en total
+          {totalSelected} proveedor(es) disponibles en total
         </span>
       </div>
     </div>

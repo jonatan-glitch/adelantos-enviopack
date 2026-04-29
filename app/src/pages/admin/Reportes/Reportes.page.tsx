@@ -51,13 +51,13 @@ export const ReportesPage = () => {
       color: 'green',
     },
     {
-      title: 'Choferes totales',
+      title: 'Proveedores totales',
       value: stats?.choferes_total ?? 0,
       icon: <Users size={20} />,
       color: 'purple',
     },
     {
-      title: 'Choferes con adelanto',
+      title: 'Proveedores con adelanto',
       value: stats?.choferes_con_adelanto ?? 0,
       icon: <CreditCard size={20} />,
       color: 'orange',

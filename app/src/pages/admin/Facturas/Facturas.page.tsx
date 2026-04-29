@@ -68,7 +68,7 @@ export const FacturasAdminPage = () => {
   const columns = [
     {
       key: 'chofer',
-      title: 'Chofer',
+      title: 'Proveedor',
       render: (f: Factura) => (
         <div>
           <p style={{ fontWeight: 600 }}>{f.chofer.nombre} {f.chofer.apellido}</p>
@@ -212,7 +212,7 @@ export const FacturasAdminPage = () => {
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Facturas recibidas</h1>
-          <p className={styles.pageSubtitle}>Gestioná las facturas enviadas por los choferes</p>
+          <p className={styles.pageSubtitle}>Gestioná las facturas enviadas por los proveedores</p>
         </div>
       </div>
 
@@ -302,7 +302,7 @@ const AbonarModal = ({
         comprobante_url: comprobanteUrl,
       })
     },
-    onSuccess: () => { toast.success('Pago registrado correctamente. El chofer fue notificado por email.'); onSuccess() },
+    onSuccess: () => { toast.success('Pago registrado correctamente. El proveedor fue notificado por email.'); onSuccess() },
     onError: () => toast.error('Error al registrar el pago'),
   })
 
@@ -316,7 +316,7 @@ const AbonarModal = ({
         <div className={styles.modalBody}>
           <div className={styles.resumen}>
             <div className={styles.resumenRow}>
-              <span>Chofer</span>
+              <span>Proveedor</span>
               <strong>{factura.chofer.nombre} {factura.chofer.apellido}</strong>
             </div>
             <div className={styles.resumenRow}>
@@ -368,7 +368,7 @@ const RechazarFacturaModal = ({
 
   const mutation = useMutation({
     mutationFn: () => api.put(`/api/admin/facturas/${factura.id}/rechazar`, { motivo }),
-    onSuccess: () => { toast.success('Factura rechazada. El chofer fue notificado por email.'); onSuccess() },
+    onSuccess: () => { toast.success('Factura rechazada. El proveedor fue notificado por email.'); onSuccess() },
     onError: () => toast.error('Error al rechazar la factura'),
   })
 
@@ -382,7 +382,7 @@ const RechazarFacturaModal = ({
         <div className={styles.modalBody}>
           <div className={styles.resumen}>
             <div className={styles.resumenRow}>
-              <span>Chofer</span>
+              <span>Proveedor</span>
               <strong>{factura.chofer.nombre} {factura.chofer.apellido}</strong>
             </div>
             <div className={styles.resumenRow}>
@@ -406,7 +406,7 @@ const RechazarFacturaModal = ({
           </div>
           <div className={styles.alertWarning}>
             <AlertCircle size={16} />
-            <p>El motivo será visible para el chofer y se le enviará por email.</p>
+            <p>El motivo será visible para el proveedor y se le enviará por email.</p>
           </div>
         </div>
         <div className={styles.modalFooter}>
@@ -458,7 +458,7 @@ const PagoAdelantoModal = ({
         comprobante_url: comprobanteUrl,
       })
     },
-    onSuccess: () => { toast.success('Pago registrado. El chofer fue notificado por email.'); onSuccess() },
+    onSuccess: () => { toast.success('Pago registrado. El proveedor fue notificado por email.'); onSuccess() },
     onError: () => toast.error('Error al registrar el pago'),
   })
 
@@ -472,7 +472,7 @@ const PagoAdelantoModal = ({
         <div className={styles.modalBody}>
           <div className={styles.resumen}>
             <div className={styles.resumenRow}>
-              <span>Chofer</span>
+              <span>Proveedor</span>
               <strong>{factura.chofer.nombre} {factura.chofer.apellido}</strong>
             </div>
             <div className={styles.resumenRow}>
