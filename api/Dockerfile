@@ -23,18 +23,14 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Cache bust — increment to force full rebuild (placed before composer to invalidate vendor cache too)
-ARG CACHE_BUST=45
+# Cache bust — increment to force full rebuild
+ARG CACHE_BUST=46
 
-# Install deps (cached layer)
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
-
-# Copy source
+# Copy source first (needed for symfony scripts that reference src/)
 COPY . .
 
-# Finalize autoloader
-RUN composer dump-autoload --optimize --no-dev
+# Install deps with scripts enabled so symfony/runtime generates autoload_runtime.php
+RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
 # ────────────────────────────────────────────────────────────
 FROM php:8.2-fpm-alpine AS runtime
