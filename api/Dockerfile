@@ -23,12 +23,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
+# Cache bust — increment to force full rebuild (placed before composer to invalidate vendor cache too)
+ARG CACHE_BUST=45
+
 # Install deps (cached layer)
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
-
-# Cache bust — increment to force full rebuild
-ARG CACHE_BUST=44
 
 # Copy source
 COPY . .
