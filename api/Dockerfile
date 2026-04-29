@@ -24,13 +24,21 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Cache bust — increment to force full rebuild
-ARG CACHE_BUST=46
+ARG CACHE_BUST=47
 
-# Copy source first (needed for symfony scripts that reference src/)
+# Set Symfony env vars BEFORE composer install so scripts don't fail
+ENV APP_ENV=prod
+ENV DATABASE_URL=postgresql://app:app@localhost/app?serverVersion=15
+ENV APP_SECRET=build-time-placeholder
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Copy source
 COPY . .
 
-# Install deps with scripts enabled so symfony/runtime generates autoload_runtime.php
-RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+# Single composer install with all post-install steps
+# (generates autoload.php, autoload_runtime.php, runs symfony scripts)
+RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader \
+ && ls -la vendor/autoload_runtime.php
 
 # ────────────────────────────────────────────────────────────
 FROM php:8.2-fpm-alpine AS runtime
