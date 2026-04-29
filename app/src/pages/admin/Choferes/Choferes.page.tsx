@@ -34,8 +34,14 @@ interface ParsedRow {
 
 const inviteSchema = Yup.object({
   email: Yup.string()
-    .email('El email no es válido')
-    .required('El email es obligatorio'),
+    .required('Ingresá al menos un email')
+    .test('valid-emails', 'Hay emails inválidos en la lista', (value) => {
+      if (!value) return false
+      const emails = value.split(/[;,\n\r]+/).map((e) => e.trim()).filter(Boolean)
+      if (emails.length === 0) return false
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emails.every((e) => re.test(e))
+    }),
 })
 
 const REQUIRED_FIELDS: (keyof CsvRow)[] = ['nombre', 'apellido', 'dni', 'cuil', 'email']
@@ -248,12 +254,26 @@ export const ChoferesPage = () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const InviteModal = ({ onClose }: { onClose: () => void }) => {
+  const qc = useQueryClient()
+
+  const parseEmails = (raw: string): string[] =>
+    [...new Set(raw.split(/[;,\n\r]+/).map((e) => e.trim()).filter(Boolean))]
+
   const inviteMutation = useMutation({
     mutationFn: (values: { email: string }) =>
-      api.post('/api/admin/choferes/invitar', values),
-    onSuccess: () => {
-      toast.success('Invitación enviada. El chofer recibirá un email para completar su registro.')
-      onClose()
+      api.post<{ data: { enviadas: number; con_error: number; errores: { email: string; error: string }[] } }>(
+        '/api/admin/choferes/invitar',
+        values,
+      ),
+    onSuccess: (res) => {
+      const { enviadas, con_error, errores } = res.data.data
+      if (con_error === 0) {
+        toast.success(`${enviadas} ${enviadas === 1 ? 'invitación enviada' : 'invitaciones enviadas'} correctamente.`)
+      } else {
+        toast.warning(`${enviadas} enviadas, ${con_error} con error: ${errores.map((e) => e.email).join(', ')}`)
+      }
+      qc.invalidateQueries({ queryKey: ['admin-choferes'] })
+      if (con_error === 0) onClose()
     },
     onError: () => toast.error('No se pudo enviar la invitación. Intentá de nuevo.'),
   })
@@ -262,7 +282,7 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Invitar chofer</h3>
+          <h3 className={styles.modalTitle}>Invitar choferes</h3>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar">
             <X size={18} />
           </button>
@@ -273,46 +293,65 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
           validationSchema={inviteSchema}
           onSubmit={(values) => inviteMutation.mutate(values)}
         >
-          <Form>
-            <div className={styles.modalBody}>
-              <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-500)', lineHeight: 1.6 }}>
-                El chofer recibirá un email con un enlace para completar su propio registro: nombre, DNI, CUIT y contraseña.
-              </p>
+          {({ values }) => {
+            const count = parseEmails(values.email).length
+            return (
+              <Form>
+                <div className={styles.modalBody}>
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-gray-500)', lineHeight: 1.6 }}>
+                    Cada chofer recibirá un email con un enlace para completar su registro.
+                    Podés invitar a varios a la vez separando los emails con <strong>;</strong>, <strong>,</strong> o salto de línea.
+                  </p>
 
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="invite-email">
-                  Email del chofer *
-                </label>
-                <Field
-                  id="invite-email"
-                  name="email"
-                  type="email"
-                  className={styles.input}
-                  placeholder="chofer@ejemplo.com"
-                  autoFocus
-                />
-                <ErrorMessage name="email" component="p" className={styles.error} />
-              </div>
-            </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="invite-email">
+                      Emails de los choferes *
+                    </label>
+                    <Field
+                      id="invite-email"
+                      name="email"
+                      as="textarea"
+                      rows={5}
+                      className={styles.input}
+                      style={{ fontFamily: 'inherit', resize: 'vertical', minHeight: 100 }}
+                      placeholder="chofer1@ejemplo.com; chofer2@ejemplo.com&#10;chofer3@ejemplo.com"
+                      autoFocus
+                    />
+                    <ErrorMessage name="email" component="p" className={styles.error} />
+                    {count > 0 && (
+                      <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', marginTop: 4 }}>
+                        {count} {count === 1 ? 'email detectado' : 'emails detectados'}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-            <div className={styles.modalFooter}>
-              <Button
-                type="button"
-                label="Cancelar"
-                variant="outline"
-                color="gray"
-                onClick={onClose}
-              />
-              <Button
-                type="submit"
-                label={inviteMutation.isPending ? 'Enviando...' : 'Enviar invitación'}
-                variant="solid"
-                color="blue"
-                loading={inviteMutation.isPending}
-                disabled={inviteMutation.isPending}
-              />
-            </div>
-          </Form>
+                <div className={styles.modalFooter}>
+                  <Button
+                    type="button"
+                    label="Cancelar"
+                    variant="outline"
+                    color="gray"
+                    onClick={onClose}
+                  />
+                  <Button
+                    type="submit"
+                    label={
+                      inviteMutation.isPending
+                        ? 'Enviando...'
+                        : count > 1
+                          ? `Enviar ${count} invitaciones`
+                          : 'Enviar invitación'
+                    }
+                    variant="solid"
+                    color="blue"
+                    loading={inviteMutation.isPending}
+                    disabled={inviteMutation.isPending || count === 0}
+                  />
+                </div>
+              </Form>
+            )
+          }}
         </Formik>
       </div>
     </div>

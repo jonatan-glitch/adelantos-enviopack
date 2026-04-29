@@ -31,18 +31,49 @@ class ChoferController extends AbstractApiController
     #[Route('/invitar', name: 'admin_choferes_invitar', methods: ['POST'])]
     public function invitar(Request $request): JsonResponse
     {
-        $data  = json_decode($request->getContent(), true) ?? [];
-        $email = trim($data['email'] ?? '');
+        $data = json_decode($request->getContent(), true) ?? [];
+        $raw  = trim($data['email'] ?? '');
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse(['code' => 422, 'message' => 'Error de validación', 'errors' => ['email' => 'El email no es válido']], 422);
+        if ($raw === '') {
+            return new JsonResponse(['code' => 422, 'message' => 'Error de validación', 'errors' => ['email' => 'Ingresá al menos un email']], 422);
         }
 
-        $result = $this->choferService->invitar($email);
-        $msg = $result['email_sent']
-            ? 'Invitación enviada correctamente.'
-            : 'Invitación creada pero el email no pudo enviarse. Verificá la configuración de correo.';
-        return $this->ok(['message' => $msg, 'email_sent' => $result['email_sent']]);
+        // Split by ;, , or newlines and clean
+        $emails = array_values(array_unique(array_filter(array_map(
+            'trim',
+            preg_split('/[;,\n\r]+/', $raw)
+        ))));
+
+        $exitos = [];
+        $errores = [];
+
+        foreach ($emails as $email) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errores[] = ['email' => $email, 'error' => 'Email inválido'];
+                continue;
+            }
+
+            try {
+                $result = $this->choferService->invitar($email);
+                $exitos[] = ['email' => $email, 'email_sent' => $result['email_sent']];
+            } catch (\Throwable $e) {
+                $errores[] = ['email' => $email, 'error' => $e->getMessage()];
+            }
+        }
+
+        $totalExitos = count($exitos);
+        $totalErrores = count($errores);
+        $msg = $totalErrores === 0
+            ? "{$totalExitos} " . ($totalExitos === 1 ? 'invitación enviada' : 'invitaciones enviadas') . ' correctamente.'
+            : "{$totalExitos} enviadas, {$totalErrores} con error.";
+
+        return $this->ok([
+            'message' => $msg,
+            'enviadas' => $totalExitos,
+            'con_error' => $totalErrores,
+            'exitos' => $exitos,
+            'errores' => $errores,
+        ]);
     }
 
     #[Route('/importar', name: 'admin_choferes_importar', methods: ['POST'])]
