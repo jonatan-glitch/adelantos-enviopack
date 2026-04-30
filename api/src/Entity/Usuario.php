@@ -50,7 +50,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getId(): ?int { return $this->id; }
     public function getEmail(): string { return $this->email; }
-    public function setEmail(string $email): static { $this->email = $email; return $this; }
+    public function setEmail(string $email): static { $this->email = strtolower(trim($email)); return $this; }
     public function getNombre(): string { return $this->nombre; }
     public function setNombre(string $nombre): static { $this->nombre = self::capitalizeName(trim($nombre)); return $this; }
     public function getApellido(): string { return $this->apellido; }

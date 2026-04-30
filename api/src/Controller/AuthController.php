@@ -162,7 +162,7 @@ class AuthController extends AbstractApiController
         EmailService $emailService,
     ): JsonResponse {
         $data  = json_decode($request->getContent(), true) ?? [];
-        $email = trim($data['email'] ?? '');
+        $email = strtolower(trim($data['email'] ?? ''));
 
         // Always return same message to avoid user enumeration
         $response = $this->ok(['message' => 'Si el email existe recibirás instrucciones en breve.']);

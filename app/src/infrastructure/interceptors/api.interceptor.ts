@@ -58,6 +58,14 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config as typeof error.config & { _retry?: boolean }
+    const requestUrl: string = originalRequest?.url ?? ''
+    const isAuthEndpoint = EXCLUDED_AUTH_URLS.some((url) => requestUrl.includes(url))
+
+    // Para endpoints públicos (login, registro, etc.), NO intentar refresh ni redirigir.
+    // Simplemente devolver el error para que la página lo muestre.
+    if (isAuthEndpoint) {
+      return Promise.reject(new ErrorResponse(error))
+    }
 
     if ([401, 403].includes(error.response?.status) && !originalRequest._retry) {
       originalRequest._retry = true

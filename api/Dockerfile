@@ -24,7 +24,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Cache bust — increment to force full rebuild
-ARG CACHE_BUST=49
+ARG CACHE_BUST=50
 
 # Set Symfony env vars BEFORE composer install so scripts don't fail
 ENV APP_ENV=prod
